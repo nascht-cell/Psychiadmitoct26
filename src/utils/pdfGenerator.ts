@@ -89,13 +89,17 @@ const savePdfFile = (pdf: any, filename: string): void => {
 };
 
 export const exportElementToA4Pdf = async (
-  elementId: string,
+  elementIdOrElement: string | HTMLElement,
   fileName: string = 'Psychiatric_Assessment.pdf',
   patientInfo?: PatientFooterData
 ): Promise<boolean> => {
-  const element = document.getElementById(elementId);
+  const element =
+    typeof elementIdOrElement === 'string'
+      ? document.getElementById(elementIdOrElement)
+      : elementIdOrElement;
+
   if (!element) {
-    console.error(`Element with id #${elementId} not found`);
+    console.error(`Element not found:`, elementIdOrElement);
     return false;
   }
 
@@ -128,7 +132,11 @@ export const exportElementToA4Pdf = async (
 
     // If the document is structured as distinct A4 page sheets (.a4-page-sheet),
     // capture each page individually for exact 1:1 fidelity with zero cutting across sections!
-    const pageSheets = element.querySelectorAll<HTMLElement>('.a4-page-sheet');
+    let pageSheets = element.querySelectorAll<HTMLElement>('.a4-page-sheet');
+    if ((!pageSheets || pageSheets.length === 0) && element.classList.contains('a4-page-sheet')) {
+      pageSheets = [element] as any;
+    }
+
     if (pageSheets && pageSheets.length > 0) {
       const pdf = new jsPDF('p', 'mm', 'a4');
       for (let i = 0; i < pageSheets.length; i++) {
@@ -139,18 +147,34 @@ export const exportElementToA4Pdf = async (
           allowTaint: true,
           logging: false,
           backgroundColor: '#ffffff',
-          windowWidth: 1024,
+          windowWidth: 794,
+          windowHeight: 1123,
+          width: 794,
+          height: 1123,
           scrollX: 0,
           scrollY: 0,
           onclone: (clonedDoc: Document, clonedElement: HTMLElement | null) => {
-            // 1. Force exact A4 dimensions and visibility on cloned page sheet
+            // 1. Reset root doc styles in cloned iframe to standard desktop 16px base
+            clonedDoc.documentElement.style.fontSize = '16px';
+            clonedDoc.documentElement.style.margin = '0';
+            clonedDoc.documentElement.style.padding = '0';
+            clonedDoc.documentElement.style.backgroundColor = '#ffffff';
+
+            clonedDoc.body.style.margin = '0';
+            clonedDoc.body.style.padding = '0';
+            clonedDoc.body.style.backgroundColor = '#ffffff';
+            clonedDoc.body.style.overflow = 'visible';
+
+            // 2. Isolate and position cloned page sheet at (0, 0)
             if (clonedElement) {
               clonedElement.style.visibility = 'visible';
               clonedElement.style.display = 'flex';
               clonedElement.style.flexDirection = 'column';
               clonedElement.style.justifyContent = 'space-between';
               clonedElement.style.opacity = '1';
-              clonedElement.style.position = 'static';
+              clonedElement.style.position = 'absolute';
+              clonedElement.style.left = '0px';
+              clonedElement.style.top = '0px';
               clonedElement.style.width = '210mm';
               clonedElement.style.height = '297mm';
               clonedElement.style.minHeight = '297mm';
@@ -160,26 +184,18 @@ export const exportElementToA4Pdf = async (
               clonedElement.style.overflow = 'hidden';
               clonedElement.style.backgroundColor = '#ffffff';
               clonedElement.style.color = '#000000';
+              clonedElement.style.transform = 'none';
 
-              let parent = clonedElement.parentElement;
-              while (parent) {
-                parent.style.visibility = 'visible';
-                parent.style.display = 'block';
-                parent.style.opacity = '1';
-                parent.style.position = 'static';
-                parent.style.left = 'auto';
-                parent.style.top = 'auto';
-                parent.style.width = 'auto';
-                parent.style.height = 'auto';
-                parent.style.overflow = 'visible';
-                parent = parent.parentElement;
-              }
+              // Remove other DOM nodes from clonedDoc.body to prevent parent style leaking
+              clonedDoc.body.innerHTML = '';
+              clonedDoc.body.appendChild(clonedElement);
             }
 
-            // 2. Clone all <style> elements into clonedDoc.head (crucial for Chrome 109 / about:blank iframe)
+            // 3. Inject authoritative clean styles into clonedDoc.head
             try {
               const head = clonedDoc.head || clonedDoc.getElementsByTagName('head')[0];
               if (head) {
+                // Copy existing styles
                 const styleTags = document.querySelectorAll('style');
                 styleTags.forEach(st => {
                   try {
@@ -189,7 +205,6 @@ export const exportElementToA4Pdf = async (
                   } catch (_) {}
                 });
 
-                // Also copy accessible cssRules to ensure external style rules are available
                 for (let s = 0; s < document.styleSheets.length; s++) {
                   try {
                     const sheetObj = document.styleSheets[s];
@@ -206,6 +221,55 @@ export const exportElementToA4Pdf = async (
                     // Ignore cross-origin stylesheet errors
                   }
                 }
+
+                // Authoritative print override stylesheet
+                const pdfOverrideStyle = clonedDoc.createElement('style');
+                pdfOverrideStyle.textContent = `
+                  * {
+                    box-sizing: border-box !important;
+                    -webkit-print-color-adjust: exact !important;
+                    print-color-adjust: exact !important;
+                  }
+                  html, body {
+                    margin: 0 !important;
+                    padding: 0 !important;
+                    font-size: 16px !important;
+                    background-color: #ffffff !important;
+                  }
+                  .a4-page-sheet {
+                    width: 210mm !important;
+                    height: 297mm !important;
+                    min-height: 297mm !important;
+                    max-height: 297mm !important;
+                    padding: 8mm 8mm 8mm 12mm !important;
+                    font-family: 'TH Sarabun PSK', 'TH Sarabun New', 'Sarabun', Tahoma, 'Leelawadee', sans-serif !important;
+                    font-size: 14pt !important;
+                    line-height: 1.3 !important;
+                    box-sizing: border-box !important;
+                    color: #000000 !important;
+                    background-color: #ffffff !important;
+                    display: flex !important;
+                    flex-direction: column !important;
+                    justify-content: space-between !important;
+                    overflow: hidden !important;
+                    position: absolute !important;
+                    left: 0 !important;
+                    top: 0 !important;
+                  }
+                  .font-bold, b, strong {
+                    font-weight: 700 !important;
+                  }
+                  .font-semibold {
+                    font-weight: 600 !important;
+                  }
+                  .font-normal {
+                    font-weight: 400 !important;
+                  }
+                  .text-black {
+                    color: #000000 !important;
+                  }
+                `;
+                head.appendChild(pdfOverrideStyle);
               }
             } catch (styleErr) {
               console.warn('Style copy warning in onclone:', styleErr);
@@ -216,7 +280,7 @@ export const exportElementToA4Pdf = async (
         try {
           canvas = await html2canvas(sheet, { scale: 2, ...renderOpts });
         } catch (canvasErr) {
-          console.warn('html2canvas scale 2 failed, trying scale 1.5 for low-spec memory:', canvasErr);
+          console.warn('html2canvas scale 2 failed, trying scale 1.5:', canvasErr);
           try {
             canvas = await html2canvas(sheet, { scale: 1.5, ...renderOpts });
           } catch (_) {

@@ -10,31 +10,31 @@ const Step2PastAndPsychosocialComponent: React.FC<AssessmentStepProps> = ({
   toggleArrayItem,
 }) => {
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* SECTION C: Psychiatric / Medical History (Mirrors A4 Document Page 1 Box 3) */}
       <section id="section-c" className="clay-surface overflow-hidden">
-        <div className="px-6 py-4 bg-gradient-to-r from-blue-700 to-indigo-800 text-white flex items-center justify-between rounded-t-[26px]">
-          <div className="flex items-center gap-2.5">
-            <HeartPulse className="w-5 h-5 text-blue-200" />
-            <h3 className="font-bold text-white text-base">
+        <div className="px-3.5 sm:px-6 py-2.5 sm:py-4 bg-gradient-to-r from-blue-700 to-indigo-800 text-white flex items-center justify-between rounded-t-[16px] sm:rounded-t-[26px]">
+          <div className="flex items-center gap-2 sm:gap-2.5">
+            <HeartPulse className="w-4 h-4 sm:w-5 sm:h-5 text-blue-200" />
+            <h3 className="font-bold text-white text-sm sm:text-base">
               C. Psychiatric / Medical / Medication History (ประวัติอดีต)
             </h3>
           </div>
-          <span className="text-xs text-blue-100 font-medium">ประวัติจิตเวช ทางกาย ยา และสารเสพติด</span>
+          <span className="text-xs text-blue-100 font-medium hidden sm:inline">ประวัติจิตเวช ทางกาย ยา และสารเสพติด</span>
         </div>
 
-        <div className="p-6 space-y-6">
+        <div className="p-3.5 sm:p-6 space-y-4 sm:space-y-6">
           {/* Psychiatric History */}
-          <div className="border-b border-slate-100 pb-5">
-            <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-3">
+          <div className="border-b border-slate-100 pb-4 sm:pb-5">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-2.5 sm:mb-3">
               <span className="text-xs font-bold text-slate-800 uppercase tracking-wider sm:w-64 shrink-0">
                 ประวัติจิตเวชเดิม:
               </span>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-1.5 sm:gap-2">
                 <button
                   type="button"
                   onClick={() => onChange({ psychiatricHistory: 'ไม่มีประวัติ' })}
-                  className={`px-4 py-2 min-h-[40px] text-xs font-semibold rounded-lg border transition-all cursor-pointer ${
+                  className={`px-3 sm:px-4 py-1.5 sm:py-2 min-h-[36px] sm:min-h-[40px] text-xs font-semibold rounded-lg border transition-all cursor-pointer ${
                     data.psychiatricHistory === 'ไม่มีประวัติ'
                       ? 'bg-emerald-600 text-white border-emerald-600 shadow-2xs'
                       : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'
@@ -45,7 +45,7 @@ const Step2PastAndPsychosocialComponent: React.FC<AssessmentStepProps> = ({
                 <button
                   type="button"
                   onClick={() => onChange({ psychiatricHistory: 'มีประวัติ' })}
-                  className={`px-4 py-2 min-h-[40px] text-xs font-semibold rounded-lg border transition-all cursor-pointer ${
+                  className={`px-3 sm:px-4 py-1.5 sm:py-2 min-h-[36px] sm:min-h-[40px] text-xs font-semibold rounded-lg border transition-all cursor-pointer ${
                     data.psychiatricHistory === 'มีประวัติ'
                       ? 'bg-indigo-600 text-white border-indigo-600 shadow-2xs'
                       : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'
@@ -567,21 +567,21 @@ const Step2PastAndPsychosocialComponent: React.FC<AssessmentStepProps> = ({
 
       {/* SECTION G: Psychosocial Assessment (Mirrors A4 Document Page 2 Box 4) */}
       <section id="section-g" className="clay-surface overflow-hidden">
-        <div className="px-6 py-4 bg-gradient-to-r from-emerald-700 to-teal-800 text-white flex items-center justify-between rounded-t-[26px]">
-          <div className="flex items-center gap-2.5">
-            <Users className="w-5 h-5 text-emerald-200" />
-            <h3 className="font-bold text-white text-base">
+        <div className="px-3.5 sm:px-6 py-2.5 sm:py-4 bg-gradient-to-r from-emerald-700 to-teal-800 text-white flex items-center justify-between rounded-t-[16px] sm:rounded-t-[26px]">
+          <div className="flex items-center gap-2 sm:gap-2.5">
+            <Users className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-200" />
+            <h3 className="font-bold text-white text-sm sm:text-base">
               G. Psychosocial Assessment (การประเมินด้านจิตสังคม)
             </h3>
           </div>
-          <span className="text-xs text-emerald-100 font-medium">ความเครียด สิ่งแวดล้อม และครอบครัว</span>
+          <span className="text-xs text-emerald-100 font-medium hidden sm:inline">ความเครียด สิ่งแวดล้อม และครอบครัว</span>
         </div>
-        <div className="p-6 space-y-4">
+        <div className="p-3.5 sm:p-6 space-y-3.5 sm:space-y-4">
           <div>
-            <label className="block text-xs font-bold text-slate-800 uppercase tracking-wider mb-2">
+            <label className="block text-xs font-bold text-slate-800 uppercase tracking-wider mb-1.5 sm:mb-2">
               Psychosocial Stressors (ปัจจัยกระตุ้นความเครียด) <span className="text-xs font-normal text-slate-500">(หากเลือกข้ออื่น ระบบจะยกเลิกข้อ "ไม่มี/ไม่ชัดเจน" ให้อัตโนมัติ)</span>
             </label>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-1.5 sm:gap-2">
               {[
                 'ปัญหาความสัมพันธ์/ครอบครัว',
                 'ปัญหาการเงิน/หนี้สิน',

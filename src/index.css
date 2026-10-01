@@ -5,19 +5,24 @@
   --font-sans: 'Sarabun', 'Lexend', 'TH Sarabun PSK', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-thai: 'Sarabun', sans-serif;
   --font-en: 'Lexend', sans-serif;
-  /* Comfortable 17px scale across interface */
-  --text-xs: 0.9rem;     /* ~15px */
-  --text-xs--line-height: 1.65;
-  --text-sm: 1rem;       /* 16.5px */
-  --text-sm--line-height: 1.75;
-  --text-base: 1.075rem; /* ~17.5px */
-  --text-base--line-height: 1.8;
 }
 
 @layer base {
   html {
-    font-size: 17px;
+    font-size: 14.5px; /* iPhone / Mobile base size */
     -webkit-text-size-adjust: 100%;
+  }
+
+  @media (min-width: 640px) {
+    html {
+      font-size: 15.5px; /* iPad / Tablet base size */
+    }
+  }
+
+  @media (min-width: 1024px) {
+    html {
+      font-size: 16.5px; /* PC / Desktop base size - preserves the loved crisp PC layout */
+    }
   }
 
   html, body {
@@ -34,11 +39,11 @@
 
   body {
     font-family: 'Sarabun', 'Lexend', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    font-size: 17px;
+    font-size: 1rem;
     font-weight: 400;
-    line-height: 1.8;
-    letter-spacing: 0.02em;
-    word-spacing: 0.05em;
+    line-height: 1.65;
+    letter-spacing: 0.015em;
+    word-spacing: 0.03em;
     color: #2c3e50;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
@@ -55,11 +60,10 @@
   /* สำหรับเนื้อหาบทความยาวๆ (Body Text) */
   .article-content {
     font-family: 'Sarabun', sans-serif;
-    font-size: 17px;
+    font-size: 1rem;
     font-weight: 400;
-    line-height: 1.8;
-    letter-spacing: 0.02em;
-    word-spacing: 0.05em;
+    line-height: 1.7;
+    letter-spacing: 0.015em;
     color: #2c3e50;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
@@ -67,62 +71,67 @@
     max-width: 780px;
   }
 
-  /* สำหรับหัวข้อ (Headings) เพื่อให้แยกแยะลำดับสายตาได้ชัดเจน */
+  /* สำหรับหัวข้อ (Headings) */
   h1, h2, h3 {
     font-family: 'Sarabun', sans-serif;
     font-weight: 600;
     color: #1a252f;
-    line-height: 1.4;
+    line-height: 1.35;
     letter-spacing: 0.01em;
-    margin-bottom: 0.8rem;
+    margin-bottom: 0.6rem;
   }
 
   h4, h5, h6 {
     font-family: 'Sarabun', sans-serif;
     font-weight: 600;
     color: #1a252f;
-    line-height: 1.45;
+    line-height: 1.4;
     letter-spacing: 0.01em;
   }
 
   p {
     font-family: 'Sarabun', sans-serif;
-    line-height: 1.8;
-    letter-spacing: 0.02em;
-    word-spacing: 0.05em;
+    line-height: 1.65;
+    letter-spacing: 0.015em;
     color: #2c3e50;
-    font-size: 17px;
+    font-size: 1rem;
   }
 
   input, textarea, select, button {
     font-family: 'Sarabun', 'Lexend', system-ui, sans-serif;
-    letter-spacing: 0.02em;
+    letter-spacing: 0.015em;
     color: #2c3e50;
-    line-height: 1.7;
-    font-size: 17px;
+    line-height: 1.5;
+    font-size: 0.95rem;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
 
-  /* จำกัดความกว้างของกล่องข้อความ (Max-width 700px - 800px) เพื่อไม่ให้ตาเหนื่อย */
+  /* On iOS/iPhone: inputs must have at least 16px computed font to prevent browser auto-zoom */
+  @media (max-width: 767px) {
+    input, textarea, select {
+      font-size: 16px !important;
+    }
+  }
+
+  /* จำกัดความกว้างของกล่องข้อความเพื่อไม่ให้ตาเหนื่อย */
   textarea,
   .reading-measure,
   .clinical-narrative {
     max-width: 780px;
     width: 100%;
-    font-size: 17px;
-    line-height: 1.8;
+    line-height: 1.65;
   }
 
   input::placeholder, textarea::placeholder {
     color: #718096;
-    letter-spacing: 0.02em;
+    letter-spacing: 0.015em;
   }
 
   label {
-    line-height: 1.65;
+    line-height: 1.5;
     letter-spacing: 0.015em;
-    font-size: 16px;
+    font-size: 0.9rem;
     font-weight: 500;
     color: #2c3e50;
   }
@@ -519,11 +528,73 @@
   color: #172554;
 }
 
+/* Responsive Clay Adaptation for Mobile (iPhone) and Tablet (iPad) */
+@media (max-width: 639px) {
+  .clay-surface,
+  .clay-card,
+  .clay-card-blue,
+  .clay-card-emerald,
+  .clay-card-mint,
+  .clay-card-amber,
+  .clay-card-rose,
+  .clay-card-purple {
+    border-radius: 16px !important;
+    -webkit-border-radius: 16px !important;
+    box-shadow: 0 4px 14px rgba(100, 116, 139, 0.08),
+                inset 0 -2px 6px rgba(100, 116, 139, 0.05),
+                inset 0 2px 6px rgba(255, 255, 255, 0.9) !important;
+    -webkit-box-shadow: 0 4px 14px rgba(100, 116, 139, 0.08),
+                        inset 0 -2px 6px rgba(100, 116, 139, 0.05),
+                        inset 0 2px 6px rgba(255, 255, 255, 0.9) !important;
+  }
+
+  .clay-btn {
+    border-radius: 12px !important;
+    -webkit-border-radius: 12px !important;
+    font-size: 0.85rem !important;
+  }
+
+  .clay-input {
+    border-radius: 10px !important;
+    -webkit-border-radius: 10px !important;
+  }
+
+  .clay-pill-active,
+  .clay-pill-inactive {
+    font-size: 0.8rem !important;
+  }
+}
+
+@media (min-width: 640px) and (max-width: 1023px) {
+  /* iPad / Tablet */
+  .clay-surface,
+  .clay-card,
+  .clay-card-blue,
+  .clay-card-emerald,
+  .clay-card-mint,
+  .clay-card-amber,
+  .clay-card-rose,
+  .clay-card-purple {
+    border-radius: 20px !important;
+    -webkit-border-radius: 20px !important;
+  }
+
+  .clay-btn {
+    border-radius: 14px !important;
+    -webkit-border-radius: 14px !important;
+  }
+
+  .clay-input {
+    border-radius: 12px !important;
+    -webkit-border-radius: 12px !important;
+  }
+}
+
 /* Authentic TH Sarabun PSK Document Formatting */
 .sarabun-document {
-  font-family: 'TH Sarabun PSK', 'Sarabun', 'THSarabunPSK', 'TH Sarabun New', 'THSarabunNew', sans-serif !important;
-  font-size: 14pt !important;
-  line-height: 1.35 !important;
+  font-family: 'TH Sarabun PSK', 'TH Sarabun New', 'Sarabun', Tahoma, 'Leelawadee', sans-serif !important;
+  font-size: 14pt;
+  line-height: 1.3;
   color: #000000 !important;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -546,33 +617,29 @@
   --color-amber-950: #451a03;
 }
 
-.sarabun-document h1,
-.sarabun-document .doc-title {
-  font-size: 15pt !important;
+/* Explicit document typography hierarchy with uncompromised bold weights and sharp contrast */
+.sarabun-document .font-bold,
+.sarabun-document b,
+.sarabun-document strong,
+.a4-page-sheet .font-bold,
+.a4-page-sheet b,
+.a4-page-sheet strong {
+  font-weight: 700 !important;
+}
+
+.sarabun-document .font-semibold,
+.a4-page-sheet .font-semibold {
+  font-weight: 600 !important;
+}
+
+.sarabun-document .font-normal,
+.a4-page-sheet .font-normal {
   font-weight: 400 !important;
-  line-height: 1.3 !important;
 }
 
-.sarabun-document h2,
-.sarabun-document .section-title {
-  font-size: 14pt !important;
-  font-weight: 400 !important;
-  line-height: 1.35 !important;
-}
-
-.sarabun-document p,
-.sarabun-document span,
-.sarabun-document td,
-.sarabun-document th,
-.sarabun-document label,
-.sarabun-document div {
-  font-size: 14pt !important;
-  line-height: 1.35 !important;
-}
-
-.sarabun-document .doc-meta {
-  font-size: 12pt !important;
-  line-height: 1.25 !important;
+.sarabun-document .text-black,
+.a4-page-sheet .text-black {
+  color: #000000 !important;
 }
 
 /* Browser Native Print Styles (@media print) */
@@ -586,7 +653,7 @@
     background: #ffffff !important;
     background-image: none !important;
     color: #000000 !important;
-    font-size: 16pt !important;
+    font-size: 14pt !important;
   }
 
   body * {

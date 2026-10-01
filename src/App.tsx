@@ -438,35 +438,35 @@ export default function App() {
   return (
     <div className="min-h-screen flex flex-col text-slate-800 w-full max-w-full overflow-x-hidden">
       {/* Top Bar - Floating Clay Surface */}
-      <header className="sticky top-2 z-40 max-w-6xl mx-auto w-[96%] sm:w-[98%] mt-2 mb-3 no-print">
-        <div className="clay-surface px-4 sm:px-6 py-3 flex items-center justify-between gap-3 sm:gap-4 h-16 sm:h-20 bg-white/95 backdrop-blur-md">
-          {/* Zone 1: Single brand title wordmark with live patient status badge */}
-          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-            <div className="p-1.5 bg-blue-50 rounded-2xl border border-blue-100 shadow-2xs shrink-0">
+      <header className="sticky top-1 sm:top-2 z-40 max-w-6xl mx-auto w-[98%] mt-1 sm:mt-2 mb-2 sm:mb-3 no-print">
+        <div className="clay-surface px-3 sm:px-6 py-2 sm:py-3 flex items-center justify-between gap-2 sm:gap-4 min-h-[52px] sm:h-20 bg-white/95 backdrop-blur-md">
+          {/* Zone 1: Brand title wordmark with live patient status badge */}
+          <div className="flex items-center gap-2 sm:gap-3 shrink min-w-0">
+            <div className="p-1 sm:p-1.5 bg-blue-50 rounded-xl sm:rounded-2xl border border-blue-100 shadow-2xs shrink-0">
               <img
                 src="/Official_emblem_of_Bhumibol_Adulyadej_Hospital.jpg"
                 alt="ตราสัญลักษณ์ รพ.ภูมิพลอดุลยเดช"
-                className="w-auto object-contain h-9 sm:h-11 drop-shadow-xs"
+                className="w-auto object-contain h-7 sm:h-9 md:h-11 drop-shadow-xs"
                 style={{ aspectRatio: '200 / 283' }}
                 referrerPolicy="no-referrer"
               />
             </div>
-            <div>
-              <div className="flex items-center gap-2 flex-wrap">
-                <span className="font-extrabold tracking-tight text-slate-900 block leading-tight text-sm sm:text-base">
+            <div className="min-w-0">
+              <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+                <span className="font-extrabold tracking-tight text-slate-900 block leading-tight text-xs sm:text-base truncate">
                   แบบบันทึกแรกรับผู้ป่วยจิตเวช
                 </span>
                 {formData.hn ? (
-                  <span className="px-2.5 py-0.5 clay-token text-blue-900 text-[11px] font-bold font-mono">
+                  <span className="px-2 py-0.5 clay-token text-blue-900 text-[10px] sm:text-[11px] font-bold font-mono shrink-0">
                     HN: {formData.hn}
                   </span>
                 ) : (
-                  <span className="px-2.5 py-0.5 bg-amber-100/90 text-amber-900 rounded-full text-[11px] font-bold border border-amber-300 shadow-2xs">
+                  <span className="px-2 py-0.5 bg-amber-100/90 text-amber-900 rounded-full text-[10px] sm:text-[11px] font-bold border border-amber-300 shadow-2xs shrink-0">
                     ผู้ป่วยใหม่
                   </span>
                 )}
               </div>
-              <span className="text-[11px] text-slate-600 hidden sm:block animate-fadeIn mt-0.5 font-medium">
+              <span className="text-[11px] text-slate-600 hidden sm:block animate-fadeIn mt-0.5 font-medium truncate">
                 {formData.fullName ? (
                   <span className="text-slate-800 font-bold">แก้ไข: {formData.fullName} ({formData.age} ปี)</span>
                 ) : (
@@ -476,8 +476,8 @@ export default function App() {
             </div>
           </div>
 
-          {/* Zone 3: Primary Actions (Chunky Clay Buttons) */}
-          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+          {/* Zone 3: Primary Actions (Compact on iPhone) */}
+          <div className="flex items-center gap-1 sm:gap-2 shrink-0">
             <PWAInstallButton />
 
             {/* Keyboard Shortcut Indicator */}
@@ -492,10 +492,10 @@ export default function App() {
             <button
               type="button"
               onClick={handleLoadSamplePatient}
-              className="clay-btn clay-btn-pastel-amber px-3 py-2 text-xs font-bold transition-all flex items-center gap-1.5"
+              className="clay-btn clay-btn-pastel-amber p-1.5 sm:px-3 sm:py-2 text-xs font-bold transition-all flex items-center gap-1 sm:gap-1.5"
               title="ใส่ข้อมูลผู้ป่วยสมมติเพื่อทดสอบหน้าเอกสารและการพิมพ์"
             >
-              <Sparkles className="w-4 h-4 text-amber-600 shrink-0" />
+              <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-600 shrink-0" />
               <span className="hidden md:inline">ข้อมูลตัวอย่าง</span>
             </button>
 
@@ -503,13 +503,13 @@ export default function App() {
             <button
               type="button"
               onClick={() => setIsHistoryModalOpen(true)}
-              className="clay-btn clay-btn-pastel-blue px-3 py-2 text-xs font-bold transition-all flex items-center gap-1.5"
+              className="clay-btn clay-btn-pastel-blue p-1.5 sm:px-3 sm:py-2 text-xs font-bold transition-all flex items-center gap-1 sm:gap-1.5"
               title="เปิดดูประวัติการบันทึกที่เก็บไว้ในเครื่องของคุณ (Local Storage)"
             >
-              <History className="w-4 h-4 text-blue-600 shrink-0" />
-              <span>ประวัติการบันทึก</span>
+              <History className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-600 shrink-0" />
+              <span className="hidden sm:inline">ประวัติ</span>
               {historyCount > 0 && (
-                <span className="px-1.5 py-0.2 bg-blue-600 text-white rounded-full text-[10px] font-bold shadow-2xs">
+                <span className="px-1.5 py-0.2 bg-blue-600 text-white rounded-full text-[9px] sm:text-[10px] font-bold shadow-2xs">
                   {historyCount}
                 </span>
               )}
@@ -519,10 +519,10 @@ export default function App() {
             <button
               type="button"
               onClick={handleResetForm}
-              className="clay-btn clay-btn-secondary px-2.5 py-2 text-xs font-bold text-slate-700 hover:text-rose-600 transition-all flex items-center gap-1.5"
+              className="clay-btn clay-btn-secondary p-1.5 sm:px-2.5 sm:py-2 text-xs font-bold text-slate-700 hover:text-rose-600 transition-all flex items-center gap-1 sm:gap-1.5"
               title="ล้างข้อมูลทั้งหมดในฟอร์มเพื่อเริ่มประเมินผู้ป่วยรายใหม่"
             >
-              <RotateCcw className="w-4 h-4 text-slate-500 shrink-0" />
+              <RotateCcw className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-500 shrink-0" />
               <span className="hidden sm:inline">ล้างฟอร์ม</span>
             </button>
           </div>
@@ -563,7 +563,7 @@ export default function App() {
       )}
 
       {/* Main Content Area */}
-      <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-4">
+      <main className="flex-1 max-w-6xl w-full mx-auto px-2 sm:px-4 md:px-6 py-2 sm:py-4">
         <div className="w-full min-w-0">
           <PsychiatricAssessmentForm
             data={formData}
@@ -581,22 +581,22 @@ export default function App() {
         </div>
 
         {/* Sticky Compact Action Footer (Claymorphic Pill Toolbar) */}
-        <div className="sticky bottom-4 z-30 max-w-4xl mx-auto no-print px-2">
-          <div className="bg-slate-900/90 backdrop-blur-md text-white rounded-3xl shadow-2xl px-4 py-3 sm:px-5 sm:py-3.5 flex items-center justify-between gap-3 sm:gap-4 border border-slate-700/80">
+        <div className="sticky bottom-2 sm:bottom-4 z-30 max-w-4xl mx-auto no-print px-1 sm:px-2">
+          <div className="bg-slate-900/95 backdrop-blur-md text-white rounded-2xl sm:rounded-3xl shadow-2xl px-2.5 py-2 sm:px-5 sm:py-3 flex items-center justify-between gap-1.5 sm:gap-4 border border-slate-700/80">
             {/* Status info - condensed on mobile */}
-            <div className="flex items-center gap-2 sm:gap-3 text-xs min-w-0">
-              <span className="font-bold text-slate-100 truncate max-w-[120px] xs:max-w-[160px] sm:max-w-none">
+            <div className="flex items-center gap-1.5 sm:gap-3 text-xs min-w-0">
+              <span className="font-bold text-slate-100 truncate max-w-[85px] xs:max-w-[140px] sm:max-w-none text-[11px] sm:text-xs">
                 {formData.hn ? `HN ${formData.hn}` : 'รอระบุ HN'}
               </span>
               <span className="hidden sm:inline text-slate-600">•</span>
               {autoSaveStatus === 'saving' ? (
-                <span className="hidden xs:flex items-center gap-1.5 text-amber-400 font-bold animate-pulse text-[11px] sm:text-xs">
-                  <RefreshCw className="w-3.5 h-3.5 animate-spin text-amber-400 shrink-0" />
+                <span className="hidden xs:flex items-center gap-1 text-amber-400 font-bold animate-pulse text-[10px] sm:text-xs">
+                  <RefreshCw className="w-3 h-3 sm:w-3.5 sm:h-3.5 animate-spin text-amber-400 shrink-0" />
                   <span className="hidden md:inline">กำลังบันทึกอัตโนมัติ...</span>
                 </span>
               ) : lastAutoSavedTime ? (
-                <span className="hidden xs:flex items-center gap-1.5 text-emerald-400 font-bold text-[11px] sm:text-xs">
-                  <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                <span className="hidden xs:flex items-center gap-1 text-emerald-400 font-bold text-[10px] sm:text-xs">
+                  <Check className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-emerald-400 shrink-0" />
                   <span className="hidden md:inline">บันทึกแล้ว ({lastAutoSavedTime})</span>
                 </span>
               ) : (
@@ -610,10 +610,10 @@ export default function App() {
                   <button
                     type="button"
                     onClick={() => scrollToAndFocusField(emptyRequiredFields[0].id)}
-                    className="hidden sm:flex items-center gap-1.5 text-[11px] sm:text-xs text-rose-300 hover:text-rose-100 font-bold underline cursor-pointer shrink-0"
+                    className="hidden sm:flex items-center gap-1 text-[11px] sm:text-xs text-rose-300 hover:text-rose-100 font-bold underline cursor-pointer shrink-0"
                     title="คลิกเพื่อเลื่อนไปยังช่องจำเป็นที่ยังว่าง"
                   >
-                    <span className="w-2 h-2 rounded-full bg-rose-400 animate-ping" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-rose-400 animate-ping" />
                     <span>ขาด {emptyRequiredFields.length} ช่อง</span>
                   </button>
                 </>
@@ -621,18 +621,18 @@ export default function App() {
             </div>
 
             {/* Action Buttons - Clay Styled */}
-            <div className="flex items-center gap-2 shrink-0">
+            <div className="flex items-center gap-1 sm:gap-2 shrink-0">
               {/* History Records Button */}
               <button
                 type="button"
                 onClick={() => setIsHistoryModalOpen(true)}
-                className="clay-btn bg-slate-800 hover:bg-slate-700 active:bg-slate-900 text-slate-100 px-3 py-2 text-xs font-bold border border-slate-600 gap-1.5"
+                className="clay-btn bg-slate-800 hover:bg-slate-700 active:bg-slate-900 text-slate-100 p-1.5 sm:px-3 sm:py-2 text-xs font-bold border border-slate-600 gap-1 sm:gap-1.5"
                 title="ดูประวัติการบันทึกในเครื่อง (Local Storage)"
               >
-                <History className="w-4 h-4 text-blue-400 shrink-0" />
+                <History className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-400 shrink-0" />
                 <span className="hidden sm:inline">ประวัติ</span>
                 {historyCount > 0 && (
-                  <span className="px-1.5 py-0.2 bg-blue-500 text-white rounded-full text-[10px] font-bold">
+                  <span className="px-1.5 py-0.2 bg-blue-500 text-white rounded-full text-[9px] sm:text-[10px] font-bold">
                     {historyCount}
                   </span>
                 )}
@@ -641,20 +641,20 @@ export default function App() {
               {/* Native Browser Print button */}
               <button
                 onClick={handleNativePrint}
-                className="clay-btn bg-slate-800 hover:bg-slate-700 active:bg-slate-900 text-slate-100 px-3 py-2 text-xs font-bold border border-slate-600 gap-1.5"
+                className="clay-btn bg-slate-800 hover:bg-slate-700 active:bg-slate-900 text-slate-100 p-1.5 sm:px-3 sm:py-2 text-xs font-bold border border-slate-600 gap-1 sm:gap-1.5"
                 title="สั่งพิมพ์เอกสาร A4 (window.print)"
               >
-                <Printer className="w-4 h-4 text-blue-400 shrink-0" />
+                <Printer className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-400 shrink-0" />
                 <span className="hidden sm:inline">พิมพ์ (A4)</span>
               </button>
 
               {/* Preview A4 */}
               <button
                 onClick={() => setIsPreviewModalOpen(true)}
-                className="clay-btn bg-slate-800 hover:bg-slate-700 active:bg-slate-900 text-slate-100 px-3 py-2 text-xs font-bold border border-slate-600 gap-1.5"
+                className="clay-btn bg-slate-800 hover:bg-slate-700 active:bg-slate-900 text-slate-100 p-1.5 sm:px-3 sm:py-2 text-xs font-bold border border-slate-600 gap-1 sm:gap-1.5"
                 title="ดูตัวอย่างเอกสาร A4 ฟอนต์ TH Sarabun PSK 16pt"
               >
-                <Eye className="w-4 h-4 text-slate-300 shrink-0" />
+                <Eye className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-300 shrink-0" />
                 <span className="hidden md:inline">ดูตัวอย่าง</span>
               </button>
 
@@ -662,7 +662,7 @@ export default function App() {
               <button
                 onClick={handleSaveAndDownloadPdf}
                 disabled={isSavingAndExporting}
-                className="clay-btn clay-btn-primary px-4 py-2 text-xs font-extrabold gap-1.5 disabled:opacity-50"
+                className="clay-btn clay-btn-primary px-3 sm:px-4 py-1.5 sm:py-2 text-xs font-extrabold gap-1 sm:gap-1.5 disabled:opacity-50"
               >
                 {isSavingAndExporting ? (
                   <>
@@ -671,7 +671,7 @@ export default function App() {
                   </>
                 ) : (
                   <>
-                    <Download className="w-4 h-4 shrink-0" />
+                    <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
                     <span>บันทึก & PDF</span>
                   </>
                 )}
@@ -696,25 +696,25 @@ export default function App() {
       {/* Printable & PDF Export Container */}
       <Suspense fallback={null}>
         <div id="printable-document" className="print-only hidden print:block">
-          <AssessmentPdfDocument data={formData} />
+          <AssessmentPdfDocument id="printable-document-content" data={formData} />
         </div>
         <div
           id="offscreen-pdf-container"
           style={{
             position: 'fixed',
-            left: '-99999px',
+            left: '0px',
             top: '0px',
             width: '210mm',
             minHeight: '297mm',
-            overflow: 'visible',
-            opacity: 0,
+            overflow: 'hidden',
+            opacity: 0.001,
             zIndex: -9999,
             pointerEvents: 'none',
           }}
           aria-hidden="true"
         >
           <div id="offscreen-pdf-document">
-            <AssessmentPdfDocument data={formData} />
+            <AssessmentPdfDocument id="offscreen-pdf-document-content" data={formData} />
           </div>
         </div>
       </Suspense>

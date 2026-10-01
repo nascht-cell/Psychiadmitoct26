@@ -222,12 +222,12 @@ const PsychiatricAssessmentFormComponent: React.FC<Props> = ({
   };
 
   return (
-    <div className="space-y-6 pb-20">
-      {/* Sticky Step Header & View Mode Switcher (Clay Floating Bar) */}
-      <div className="clay-surface p-3 sm:p-4 sticky top-20 z-30 bg-white/95 backdrop-blur-md mb-6">
-        <div className="flex items-center justify-between gap-3 pb-3 border-b border-slate-200/80 flex-wrap">
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-extrabold uppercase tracking-wider text-slate-700 bg-slate-100/90 px-3 py-1 rounded-xl shadow-2xs">
+    <div className="space-y-4 sm:space-y-6 pb-20">
+      {/* Step Header & View Mode Switcher (Clay Floating Bar, non-sticky on mobile, sticky on desktop) */}
+      <div className="clay-surface p-2.5 sm:p-4 relative md:sticky md:top-24 z-20 bg-white/95 backdrop-blur-md mb-4 sm:mb-6">
+        <div className="flex items-center justify-between gap-2 pb-2 sm:pb-3 border-b border-slate-200/80 flex-wrap">
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <span className="text-[10px] sm:text-xs font-extrabold uppercase tracking-wider text-slate-700 bg-slate-100/90 px-2 sm:px-3 py-0.5 sm:py-1 rounded-lg sm:rounded-xl shadow-2xs">
               โหมดการประเมิน
             </span>
             <span className="text-xs text-slate-600 font-bold hidden sm:inline">
@@ -235,37 +235,37 @@ const PsychiatricAssessmentFormComponent: React.FC<Props> = ({
             </span>
           </div>
 
-          <div className="flex items-center gap-1.5 bg-slate-100/90 p-1.5 rounded-2xl border border-slate-200 shadow-2xs">
+          <div className="flex items-center gap-1 bg-slate-100/90 p-1 rounded-xl sm:rounded-2xl border border-slate-200 shadow-2xs">
             <button
               type="button"
               onClick={() => onViewModeChange && onViewModeChange('wizard')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+              className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg sm:rounded-xl text-[11px] sm:text-xs font-bold flex items-center gap-1 transition-all cursor-pointer ${
                 viewMode === 'wizard'
                   ? 'clay-pill-active'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
-              <Layers className="w-3.5 h-3.5" />
+              <Layers className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
               <span>ทีละขั้นตอน</span>
             </button>
 
             <button
               type="button"
               onClick={() => onViewModeChange && onViewModeChange('full')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+              className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg sm:rounded-xl text-[11px] sm:text-xs font-bold flex items-center gap-1 transition-all cursor-pointer ${
                 viewMode === 'full'
                   ? 'clay-pill-active'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
-              <LayoutList className="w-3.5 h-3.5" />
+              <LayoutList className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
               <span>แสดงทั้งหมด</span>
             </button>
           </div>
         </div>
 
-        {/* Step Navigation Tabs */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 pt-3">
+        {/* Step Navigation Tabs: 4 compact columns across all mobile & desktop screens */}
+        <div className="grid grid-cols-4 gap-1.5 sm:gap-2 md:gap-2.5 pt-2 sm:pt-3">
           {STEPS.map((step) => {
             const isActive = activeStep === step.id;
             const isCompleted = stepCompletionStatus[step.id as keyof typeof stepCompletionStatus];
@@ -280,9 +280,9 @@ const PsychiatricAssessmentFormComponent: React.FC<Props> = ({
                 key={step.id}
                 type="button"
                 onClick={() => setActiveStep(step.id)}
-                className={`relative text-left p-3.5 rounded-2xl transition-all cursor-pointer flex flex-col justify-between min-h-[72px] ${
+                className={`relative text-left p-2 sm:p-3 rounded-xl sm:rounded-2xl transition-all cursor-pointer flex flex-col justify-between min-h-[46px] sm:min-h-[64px] ${
                   isActive
-                    ? 'clay-card-blue ring-2 ring-blue-400 font-extrabold text-blue-950 scale-[1.02]'
+                    ? 'clay-card-blue ring-2 ring-blue-400 font-extrabold text-blue-950 scale-[1.01]'
                     : hasError
                     ? 'clay-card-rose text-rose-950 hover:scale-[1.01]'
                     : isCompleted
@@ -290,21 +290,22 @@ const PsychiatricAssessmentFormComponent: React.FC<Props> = ({
                     : 'clay-surface text-slate-800 hover:scale-[1.01]'
                 }`}
               >
-                <div className="flex items-center justify-between gap-1 w-full">
-                  <span className="text-[11px] font-extrabold uppercase tracking-tight text-slate-600">
-                    ขั้นตอน {step.id}
+                <div className="flex items-center justify-between gap-0.5 sm:gap-1 w-full">
+                  <span className="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-tight text-slate-600">
+                    <span className="hidden xs:inline">ขั้น </span>{step.id}
                   </span>
                   {hasError ? (
-                    <span className="text-[10px] font-bold text-rose-700 bg-rose-100/90 px-2 py-0.5 rounded-full border border-rose-300">
-                      ข้อมูลไม่ครบ
+                    <span className="text-[8px] sm:text-[10px] font-bold text-rose-700 bg-rose-100/90 px-1 sm:px-2 py-0.2 rounded-full border border-rose-300">
+                      ไม่ครบ
                     </span>
                   ) : isCompleted ? (
-                    <CheckCircle2 className="w-4 h-4 text-emerald-700 shrink-0" />
+                    <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-700 shrink-0" />
                   ) : null}
                 </div>
 
-                <div className="text-xs sm:text-sm font-extrabold truncate mt-1">
-                  {step.title}
+                <div className="text-[11px] sm:text-xs md:text-sm font-extrabold truncate mt-0.5 sm:mt-1">
+                  <span className="sm:hidden">{step.shortTitle.replace(/^\d+\.\s*/, '')}</span>
+                  <span className="hidden sm:inline">{step.title}</span>
                 </div>
               </button>
             );

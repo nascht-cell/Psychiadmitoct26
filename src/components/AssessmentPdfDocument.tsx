@@ -4,6 +4,7 @@ import { PsychiatricAssessment } from '../types/assessment';
 interface Props {
   data: PsychiatricAssessment;
   showPageBadges?: boolean;
+  id?: string;
 }
 
 interface FooterProps {
@@ -330,11 +331,12 @@ const embeddedPdfStyles = `
   .text-slate-800 { color: #1e293b !important; }
   .text-slate-700 { color: #334155 !important; }
   .text-slate-600 { color: #475569 !important; }
-  .font-bold { font-weight: bold !important; }
-  .font-normal { font-weight: normal !important; }
+  .font-bold, b, strong { font-weight: 700 !important; }
+  .font-semibold { font-weight: 600 !important; }
+  .font-normal { font-weight: 400 !important; }
 `;
 
-const AssessmentPdfDocumentComponent: React.FC<Props> = ({ data, showPageBadges = false }) => {
+const AssessmentPdfDocumentComponent: React.FC<Props> = ({ data, showPageBadges = false, id }) => {
   const hasPage4 = React.useMemo(() => {
     // Standard layout is strictly 3 pages.
     // Only expand to Page 4 if explicitly requested by user (allowPage4 === true)
@@ -785,6 +787,7 @@ const AssessmentPdfDocumentComponent: React.FC<Props> = ({ data, showPageBadges 
             </div>
           </div>
         </div>
+        <DocumentFooter data={data} pageNumber={pageNumber} totalPages={totalPages} />
       </div>
     </div>
   );
@@ -1066,7 +1069,7 @@ const AssessmentPdfDocumentComponent: React.FC<Props> = ({ data, showPageBadges 
 
   return (
     <div
-      id="psychiatric-assessment-pdf-document"
+      id={id || "psychiatric-assessment-pdf-document"}
       data-fullname={data.fullName || ''}
       data-age={data.age || ''}
       data-gender={data.gender || ''}

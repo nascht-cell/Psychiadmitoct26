@@ -11,14 +11,14 @@ const Step4PhysicalAndPlanComponent: React.FC<AssessmentStepProps> = ({
   toggleArrayItem,
 }) => {
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* SECTION F: Physical & Functional Assessment (Mirrors A4 Document Page 2 Box 3) */}
       <section id="section-f" className="clay-surface overflow-hidden">
-        <div className="px-6 py-4 bg-gradient-to-r from-blue-700 to-indigo-800 text-white flex flex-wrap items-center justify-between gap-3 rounded-t-[26px]">
-          <div className="flex flex-wrap items-center gap-2.5 sm:gap-3">
-            <div className="flex items-center gap-2">
-              <Stethoscope className="w-5 h-5 text-blue-200" />
-              <h3 className="font-bold text-white text-base">
+        <div className="px-3.5 sm:px-6 py-2.5 sm:py-4 bg-gradient-to-r from-blue-700 to-indigo-800 text-white flex flex-wrap items-center justify-between gap-2.5 sm:gap-3 rounded-t-[16px] sm:rounded-t-[26px]">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              <Stethoscope className="w-4 h-4 sm:w-5 sm:h-5 text-blue-200" />
+              <h3 className="font-bold text-white text-sm sm:text-base">
                 F. Physical & Functional Assessment
               </h3>
             </div>
@@ -26,7 +26,7 @@ const Step4PhysicalAndPlanComponent: React.FC<AssessmentStepProps> = ({
               <button
                 type="button"
                 onClick={onApplyWnlPhysical}
-                className="text-xs text-emerald-900 bg-emerald-100 hover:bg-white border border-emerald-200 font-bold px-3 py-1.5 rounded-xl flex items-center gap-1.5 transition-all shadow-xs cursor-pointer"
+                className="text-[11px] sm:text-xs text-emerald-900 bg-emerald-100 hover:bg-white border border-emerald-200 font-bold px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg sm:rounded-xl flex items-center gap-1 sm:gap-1.5 transition-all shadow-xs cursor-pointer"
                 title="ตั้งค่าการตรวจร่างกายและระบบประสาททั้งหมดเป็นปกติ (WNL)"
               >
                 <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
@@ -37,7 +37,7 @@ const Step4PhysicalAndPlanComponent: React.FC<AssessmentStepProps> = ({
           <span className="text-xs text-blue-100 font-medium hidden sm:inline">สัญญาณชีพ และการตรวจทางกาย</span>
         </div>
 
-        <div className="p-6 space-y-5">
+        <div className="p-3.5 sm:p-6 space-y-3.5 sm:space-y-5">
           {/* Vital Signs Grid */}
           <div>
             <label className="block text-xs font-bold text-slate-800 uppercase tracking-wider mb-2">
@@ -545,17 +545,17 @@ const Step4PhysicalAndPlanComponent: React.FC<AssessmentStepProps> = ({
 
       {/* SECTION I & J: Investigation & Diagnosis (Mirrors A4 Document Page 3 Box 1) */}
       <section id="section-i-j" className="clay-surface overflow-hidden">
-        <div className="px-6 py-4 bg-gradient-to-r from-indigo-700 to-purple-800 text-white flex items-center justify-between rounded-t-[26px]">
-          <div className="flex items-center gap-2.5">
-            <FlaskConical className="w-5 h-5 text-indigo-200" />
-            <h3 className="font-bold text-white text-base">
+        <div className="px-3.5 sm:px-6 py-2.5 sm:py-4 bg-gradient-to-r from-indigo-700 to-purple-800 text-white flex items-center justify-between rounded-t-[16px] sm:rounded-t-[26px]">
+          <div className="flex items-center gap-2 sm:gap-2.5">
+            <FlaskConical className="w-4 h-4 sm:w-5 sm:h-5 text-indigo-200" />
+            <h3 className="font-bold text-white text-sm sm:text-base">
               I. Investigation & J. Diagnosis (การตรวจทางห้องปฏิบัติการและการวินิจฉัย)
             </h3>
           </div>
-          <span className="text-xs text-indigo-100 font-medium">Lab, Imaging และ ICD-10</span>
+          <span className="text-xs text-indigo-100 font-medium hidden sm:inline">Lab, Imaging และ ICD-10</span>
         </div>
 
-        <div className="p-6 space-y-6">
+        <div className="p-3.5 sm:p-6 space-y-4 sm:space-y-6">
           {/* Section I */}
           <div>
             <div className="flex flex-wrap items-center gap-3 mb-2">
@@ -801,30 +801,30 @@ const Step4PhysicalAndPlanComponent: React.FC<AssessmentStepProps> = ({
 
       {/* SECTION K: Care Plan & Medical Intervention (Mirrors A4 Document Page 3 Box 2) */}
       <section id="section-k" className="clay-surface overflow-hidden">
-        <div className="px-6 py-4 bg-gradient-to-r from-teal-700 to-emerald-800 text-white flex items-center justify-between rounded-t-[26px]">
-          <div className="flex items-center gap-2.5">
-            <Pill className="w-5 h-5 text-teal-200" />
-            <h3 className="font-bold text-white text-base">
+        <div className="px-3.5 sm:px-6 py-2.5 sm:py-4 bg-gradient-to-r from-teal-700 to-emerald-800 text-white flex items-center justify-between rounded-t-[16px] sm:rounded-t-[26px]">
+          <div className="flex items-center gap-2 sm:gap-2.5">
+            <Pill className="w-4 h-4 sm:w-5 sm:h-5 text-teal-200" />
+            <h3 className="font-bold text-white text-sm sm:text-base">
               K. Care Plan & Medical Intervention (แผนการดูแลและรักษา)
             </h3>
           </div>
-          <span className="text-xs text-teal-100 font-medium">ยา การบำบัด และสหสาขาวิชาชีพ</span>
+          <span className="text-xs text-teal-100 font-medium hidden sm:inline">ยา การบำบัด และสหสาขาวิชาชีพ</span>
         </div>
 
-        <div className="p-6 space-y-5">
+        <div className="p-3.5 sm:p-6 space-y-3.5 sm:space-y-5">
           {/* 1. Pharmacological */}
           <div>
-            <label className="block text-xs font-bold text-slate-800 uppercase tracking-wider mb-2">
+            <label className="block text-xs font-bold text-slate-800 uppercase tracking-wider mb-1.5 sm:mb-2">
               1. Pharmacological Treatment (กลุ่มยาที่สั่งใช้)
             </label>
-            <div className="flex flex-wrap gap-2 mb-3">
+            <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-2.5 sm:mb-3">
               {(['ไม่มีการสั่งยาจิตเวช', 'มียาจิตเวชเดิม (ไม่ปรับเปลี่ยน)', 'ปรับ/เริ่มยาใหม่'] as const).map(
                 opt => (
                   <button
                     key={opt}
                     type="button"
                     onClick={() => onChange({ pharmPlan: opt })}
-                    className={`px-3.5 py-2 min-h-[38px] text-xs font-semibold rounded-lg border transition-all cursor-pointer ${
+                    className={`px-3 sm:px-3.5 py-1.5 sm:py-2 min-h-[36px] sm:min-h-[38px] text-xs font-semibold rounded-lg border transition-all cursor-pointer ${
                       data.pharmPlan === opt
                         ? opt === 'ปรับ/เริ่มยาใหม่'
                           ? 'bg-blue-600 text-white border-blue-600 shadow-2xs'
@@ -1028,17 +1028,17 @@ const Step4PhysicalAndPlanComponent: React.FC<AssessmentStepProps> = ({
 
       {/* SECTION L & M: Involvement & Indication for Admission (Mirrors A4 Document Page 3 Box 3) */}
       <section id="section-l-m" className="clay-surface overflow-hidden">
-        <div className="px-6 py-4 bg-gradient-to-r from-slate-800 to-indigo-950 text-white flex items-center justify-between rounded-t-[26px]">
-          <div className="flex items-center gap-2.5">
-            <FileCheck className="w-5 h-5 text-indigo-300" />
-            <h3 className="font-bold text-white text-base">
+        <div className="px-3.5 sm:px-6 py-2.5 sm:py-4 bg-gradient-to-r from-slate-800 to-indigo-950 text-white flex items-center justify-between rounded-t-[16px] sm:rounded-t-[26px]">
+          <div className="flex items-center gap-2 sm:gap-2.5">
+            <FileCheck className="w-4 h-4 sm:w-5 sm:h-5 text-indigo-300" />
+            <h3 className="font-bold text-white text-sm sm:text-base">
               L. Patient & Family Involvement & M. Indication for Admission
             </h3>
           </div>
-          <span className="text-xs text-slate-300 font-medium">ข้อบ่งชี้การรับรักษา การติดตาม และลงชื่อแพทย์</span>
+          <span className="text-xs text-slate-300 font-medium hidden sm:inline">ข้อบ่งชี้การรับรักษา การติดตาม และลงชื่อแพทย์</span>
         </div>
 
-        <div className="p-6 space-y-6">
+        <div className="p-3.5 sm:p-6 space-y-4 sm:space-y-6">
           {/* Section L */}
           <div className="space-y-3">
             <label className="block text-xs font-bold text-slate-800 uppercase tracking-wider">

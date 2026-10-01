@@ -32,7 +32,7 @@ export const PdfPreviewModal: React.FC<Props> = ({ isOpen, onClose, data }) => {
     try {
       const { exportElementToA4Pdf } = await import('../utils/pdfGenerator');
       const fileName = `Psychiatric_Assessment_HN_${data.hn || 'Draft'}_${data.assessmentDate || 'Report'}.pdf`;
-      const success = await exportElementToA4Pdf('psychiatric-assessment-pdf-document', fileName, data);
+      const success = await exportElementToA4Pdf('preview-modal-pdf-document', fileName, data);
       setIsDownloading(false);
       if (success) {
         setDownloadSuccess(true);
@@ -135,7 +135,7 @@ export const PdfPreviewModal: React.FC<Props> = ({ isOpen, onClose, data }) => {
 
         {/* Scrollable Document Preview Area (Maximized viewport for iPad & Desktop) */}
         <div className="flex-1 overflow-y-auto p-4 sm:p-8 bg-slate-800/90 flex flex-col items-center select-none">
-          <AssessmentPdfDocument data={data} showPageBadges={true} />
+          <AssessmentPdfDocument id="preview-modal-pdf-document" data={data} showPageBadges={true} />
         </div>
       </div>
     </div>
