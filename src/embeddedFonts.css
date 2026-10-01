@@ -1,0 +1,38 @@
+/* Clean Font Alias Mappings for TH Sarabun PSK using Google Sarabun and system fonts */
+
+@font-face {
+  font-family: 'TH Sarabun PSK';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('TH Sarabun PSK'), local('TH Sarabun New'), local('Sarabun'),
+       url('https://fonts.gstatic.com/s/sarabun/v14/DtVkJx26TKEr37c9aAFJn2QN.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'TH Sarabun PSK';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: local('TH Sarabun PSK Bold'), local('TH Sarabun New Bold'), local('Sarabun Bold'), local('Sarabun-Bold'),
+       url('https://fonts.gstatic.com/s/sarabun/v14/DtVjJx26TKEr37c9aB1ZlhckbQ.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'TH Sarabun New';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('TH Sarabun New'), local('TH Sarabun PSK'), local('Sarabun'),
+       url('https://fonts.gstatic.com/s/sarabun/v14/DtVkJx26TKEr37c9aAFJn2QN.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'TH Sarabun New';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: local('TH Sarabun New Bold'), local('TH Sarabun PSK Bold'), local('Sarabun Bold'),
+       url('https://fonts.gstatic.com/s/sarabun/v14/DtVjJx26TKEr37c9aB1ZlhckbQ.woff2') format('woff2');
+}
+
