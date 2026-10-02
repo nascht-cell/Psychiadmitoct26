@@ -9,6 +9,9 @@ import {
   Flame,
   Pill,
   Sparkles,
+  Brain,
+  Stethoscope,
+  AlertTriangle,
 } from 'lucide-react';
 import { AssessmentStepProps } from './AssessmentStepProps';
 import { DebouncedInput } from './DebouncedInput';
@@ -497,54 +500,65 @@ const Step2HistoryAndSymptomsComponent: React.FC<AssessmentStepProps> = ({
       </section>
 
       {/* SECTION C: Psychiatric, Medical & Substance History */}
-      <section id="section-c" className="clay-surface overflow-hidden">
-        <div className="px-3.5 sm:px-6 py-2.5 sm:py-4 bg-gradient-to-r from-blue-700 to-indigo-800 text-white flex items-center justify-between rounded-t-[16px] sm:rounded-t-[26px]">
-          <div className="flex items-center gap-2 sm:gap-2.5">
-            <HeartPulse className="w-4 h-4 sm:w-5 sm:h-5 text-blue-200" />
-            <h3 className="font-bold text-white text-sm sm:text-base">
-              C. Psychiatric / Medical / Medication History (ประวัติอดีตและสารเสพติด)
+      <section id="section-c" className="bg-white rounded-xl shadow-xs border border-slate-200 overflow-hidden">
+        <div className="px-3.5 sm:px-6 py-2.5 sm:py-3.5 bg-slate-100 border-b border-slate-200 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <HeartPulse className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
+            <h3 className="font-bold text-slate-900 text-sm sm:text-base">
+              C. Psychiatric, Medical & Substance History (ประวัติอดีตและสารเสพติด)
             </h3>
           </div>
-          <span className="text-xs text-blue-100 font-medium hidden sm:inline">ประวัติจิตเวช ทางกาย ยา และสารเสพติด</span>
+          <span className="text-xs text-slate-500 font-medium hidden sm:inline">ประวัติจิตเวช ทางกาย ยา และสารเสพติด</span>
         </div>
 
-        <div className="p-3.5 sm:p-6 space-y-4 sm:space-y-6">
-          {/* Psychiatric History */}
-          <div className="border-b border-slate-100 pb-4 sm:pb-5">
-            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-2.5 sm:mb-3">
-              <span className="text-xs font-bold text-slate-800 uppercase tracking-wider sm:w-64 shrink-0">
-                ประวัติจิตเวชเดิม:
-              </span>
-              <div className="flex flex-wrap gap-1.5 sm:gap-2">
+        <div className="p-3.5 sm:p-6 space-y-4 sm:space-y-5">
+          {/* Card 1: ประวัติจิตเวชเดิม & การนอน รพ. */}
+          <div className="rounded-xl border border-slate-200/90 bg-slate-50/60 p-3.5 sm:p-5 space-y-3.5 shadow-2xs">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200/70">
+              <div className="flex items-center gap-2">
+                <Brain className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600 shrink-0" />
+                <div>
+                  <h4 className="text-xs sm:text-sm font-bold text-slate-900">
+                    1. ประวัติการรักษาจิตเวชในอดีต (Past Psychiatric History)
+                  </h4>
+                  <p className="text-[11px] text-slate-500">ประวัติการตรวจวินิจฉัยและรับการรักษาด้านจิตเวชมาก่อน</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-1.5 self-start sm:self-auto shrink-0">
                 <button
                   type="button"
-                  onClick={() => onChange({ psychiatricHistory: 'ไม่มีประวัติ' })}
-                  className={`px-3 sm:px-4 py-1.5 sm:py-2 min-h-[36px] sm:min-h-[40px] text-xs font-semibold rounded-lg border transition-all cursor-pointer ${
+                  onClick={() => onChange({ psychiatricHistory: 'ไม่มีประวัติ', psychiatricDisorders: [], psychiatricDisorderOther: '' })}
+                  className={`px-3.5 py-1.5 text-xs font-bold rounded-lg border transition-all cursor-pointer flex items-center gap-1.5 ${
                     data.psychiatricHistory === 'ไม่มีประวัติ'
-                      ? 'bg-emerald-600 text-white border-emerald-600 shadow-2xs'
+                      ? 'bg-emerald-600 text-white border-emerald-600 shadow-xs'
                       : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'
                   }`}
                 >
-                  ไม่มีประวัติ
+                  {data.psychiatricHistory === 'ไม่มีประวัติ' && <Check className="w-3.5 h-3.5 stroke-[3] text-white shrink-0" />}
+                  <span>ไม่มีประวัติ</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => onChange({ psychiatricHistory: 'มีประวัติ' })}
-                  className={`px-3 sm:px-4 py-1.5 sm:py-2 min-h-[36px] sm:min-h-[40px] text-xs font-semibold rounded-lg border transition-all cursor-pointer ${
+                  className={`px-3.5 py-1.5 text-xs font-bold rounded-lg border transition-all cursor-pointer flex items-center gap-1.5 ${
                     data.psychiatricHistory === 'มีประวัติ'
-                      ? 'bg-indigo-600 text-white border-indigo-600 shadow-2xs'
+                      ? 'bg-indigo-600 text-white border-indigo-600 shadow-xs ring-1 ring-indigo-400/40'
                       : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'
                   }`}
                 >
-                  มีประวัติ (ระบุกลุ่มโรค)
+                  {data.psychiatricHistory === 'มีประวัติ' && <Check className="w-3.5 h-3.5 stroke-[3] text-white shrink-0" />}
+                  <span>มีประวัติ (ระบุกลุ่มโรค)</span>
                 </button>
               </div>
             </div>
 
+            {/* When has history: Disease pills & Other input */}
             {data.psychiatricHistory === 'มีประวัติ' && (
-              <div className="mt-3 p-3.5 bg-blue-50/40 rounded-xl border border-blue-200 space-y-3">
-                <span className="text-xs font-semibold text-blue-900 block">เลือกกลุ่มโรคจิตเวชเดิม:</span>
-                <div className="flex flex-wrap gap-2">
+              <div className="bg-white p-3.5 rounded-xl border border-indigo-100 shadow-2xs space-y-2.5">
+                <span className="text-xs font-bold text-indigo-950 block">
+                  กลุ่มโรคจิตเวชเดิมที่เคยได้รับการวินิจฉัย (เลือกได้มากกว่า 1 ข้อ):
+                </span>
+                <div className="flex flex-wrap gap-1.5 sm:gap-2">
                   {[
                     'Depressive d/o',
                     'Bipolar d/o',
@@ -559,8 +573,10 @@ const Step2HistoryAndSymptomsComponent: React.FC<AssessmentStepProps> = ({
                         key={item}
                         type="button"
                         onClick={() => toggleArrayItem('psychiatricDisorders', item)}
-                        className={`px-3 py-1.5 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer select-none ${
-                          isSelected ? 'clay-pill-active' : 'clay-pill-inactive'
+                        className={`px-3.5 py-1.5 text-xs font-bold rounded-full border transition-all flex items-center gap-1.5 cursor-pointer select-none active:scale-95 shadow-2xs ${
+                          isSelected
+                            ? 'bg-indigo-600 text-white border-indigo-600 ring-1 ring-indigo-300'
+                            : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'
                         }`}
                       >
                         {isSelected ? (
@@ -573,99 +589,120 @@ const Step2HistoryAndSymptomsComponent: React.FC<AssessmentStepProps> = ({
                     );
                   })}
                 </div>
-
-                <div className="pt-2">
-                  <DebouncedInput
-                    type="text"
-                    value={data.psychiatricDisorderOther}
-                    onChangeValue={val => onChange({ psychiatricDisorderOther: val })}
-                    placeholder="กลุ่มโรคอื่นๆ..."
-                    className="w-full text-xs bg-white border border-slate-300 rounded px-2.5 py-1.5 focus:ring-1 focus:ring-blue-600 focus:outline-none"
-                  />
-                </div>
+                <DebouncedInput
+                  type="text"
+                  value={data.psychiatricDisorderOther}
+                  onChangeValue={val => onChange({ psychiatricDisorderOther: val })}
+                  placeholder="ระบุโรคจิตเวชเดิมอื่นๆ / ประวัติการรักษาที่โรงพยาบาลเดิม..."
+                  className="w-full text-xs bg-slate-50/70 border border-slate-300 rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-indigo-600 focus:outline-none"
+                />
               </div>
             )}
 
-            {/* Admit History */}
-            <div className="mt-3 flex flex-wrap items-center gap-3">
-              <span className="text-xs font-bold text-slate-700">ประวัติการ Admit จิตเวช:</span>
-              <div className="flex gap-2">
+            {/* Inpatient Admission History */}
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 pt-1">
+              <span className="text-xs font-bold text-slate-700 sm:w-56 shrink-0">
+                ประวัติการ Admit จิตเวช (Inpatient):
+              </span>
+              <div className="flex items-center gap-1.5">
                 {(['ไม่เคย', 'เคย'] as const).map(opt => (
                   <button
                     key={opt}
                     type="button"
                     onClick={() => onChange({ admitHistory: opt, ...(opt === 'ไม่เคย' ? { admitLastYear: '' } : {}) })}
-                    className={`px-3 py-1.5 text-xs rounded-lg border transition-all cursor-pointer font-medium ${
+                    className={`px-3.5 py-1 text-xs rounded-lg border transition-all cursor-pointer font-bold ${
                       (data.admitHistory || 'ไม่เคย') === opt
                         ? opt === 'ไม่เคย'
-                          ? 'bg-emerald-600 text-white border-emerald-600 font-bold shadow-xs'
-                          : 'bg-amber-600 text-white border-amber-600 font-bold shadow-xs'
+                          ? 'bg-emerald-600 text-white border-emerald-600 shadow-xs'
+                          : 'bg-amber-600 text-white border-amber-600 shadow-xs'
                         : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'
                     }`}
                   >
-                    {opt}
+                    {opt === 'ไม่เคย' ? 'ไม่เคยนอน รพ.' : 'เคย Admit'}
                   </button>
                 ))}
               </div>
               {data.admitHistory === 'เคย' && (
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-slate-600">ช่วง 1 ปีที่ผ่านมา:</span>
+                <div className="flex items-center gap-2 pl-1 sm:pl-0">
+                  <span className="text-xs text-slate-600 font-medium">ช่วง 1 ปีที่ผ่านมา:</span>
                   <DebouncedInput
                     type="text"
                     value={data.admitLastYear}
                     onChangeValue={val => onChange({ admitLastYear: val })}
                     placeholder="เช่น 1 ครั้ง"
-                    className="w-24 text-xs bg-white border border-slate-300 rounded px-2 py-1 focus:ring-1 focus:ring-blue-600 focus:outline-none"
+                    className="w-24 text-xs bg-white border border-slate-300 rounded-lg px-2.5 py-1 focus:ring-2 focus:ring-amber-600 focus:outline-none"
                   />
                 </div>
               )}
             </div>
           </div>
 
-          {/* Medical History */}
-          <div className="border-b border-slate-100 pb-4 sm:pb-5">
-            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-2.5 sm:mb-3">
-              <span className="text-xs font-bold text-slate-800 uppercase tracking-wider sm:w-64 shrink-0">
-                โรคประจำตัวทางกาย:
-              </span>
-              <div className="flex flex-wrap gap-1.5 sm:gap-2">
+          {/* Card 2: โรคประจำตัวทางกาย (Medical History & Comorbidities) */}
+          <div className="rounded-xl border border-slate-200/90 bg-slate-50/60 p-3.5 sm:p-5 space-y-3.5 shadow-2xs">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200/70">
+              <div className="flex items-center gap-2">
+                <Stethoscope className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600 shrink-0" />
+                <div>
+                  <h4 className="text-xs sm:text-sm font-bold text-slate-900">
+                    2. โรคประจำตัวทางกาย (Medical History & Comorbidities)
+                  </h4>
+                  <p className="text-[11px] text-slate-500">โรคเรื้อรังทางกาย ภาวะชัก หรือการผ่าตัด</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-1.5 self-start sm:self-auto shrink-0">
                 <button
                   type="button"
                   onClick={() => onChange({ medicalHistory: 'ไม่มีโรคประจำตัว', medicalConditions: [] })}
-                  className={`px-3 sm:px-4 py-1.5 sm:py-2 min-h-[36px] sm:min-h-[40px] text-xs font-semibold rounded-lg border transition-all cursor-pointer ${
+                  className={`px-3.5 py-1.5 text-xs font-bold rounded-lg border transition-all cursor-pointer flex items-center gap-1.5 ${
                     data.medicalHistory === 'ไม่มีโรคประจำตัว'
-                      ? 'bg-emerald-600 text-white border-emerald-600 shadow-2xs'
+                      ? 'bg-emerald-600 text-white border-emerald-600 shadow-xs'
                       : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'
                   }`}
                 >
-                  ไม่มีโรคประจำตัว
+                  {data.medicalHistory === 'ไม่มีโรคประจำตัว' && <Check className="w-3.5 h-3.5 stroke-[3] text-white shrink-0" />}
+                  <span>ไม่มีโรคประจำตัว</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => onChange({ medicalHistory: 'มีโรคประจำตัว' })}
-                  className={`px-3 sm:px-4 py-1.5 sm:py-2 min-h-[36px] sm:min-h-[40px] text-xs font-semibold rounded-lg border transition-all cursor-pointer ${
+                  className={`px-3.5 py-1.5 text-xs font-bold rounded-lg border transition-all cursor-pointer flex items-center gap-1.5 ${
                     data.medicalHistory === 'มีโรคประจำตัว'
-                      ? 'bg-indigo-600 text-white border-indigo-600 shadow-2xs'
+                      ? 'bg-indigo-600 text-white border-indigo-600 shadow-xs ring-1 ring-indigo-400/40'
                       : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'
                   }`}
                 >
-                  มีโรคประจำตัว (ระบุโรค)
+                  {data.medicalHistory === 'มีโรคประจำตัว' && <Check className="w-3.5 h-3.5 stroke-[3] text-white shrink-0" />}
+                  <span>มีโรคประจำตัว (ระบุโรค)</span>
                 </button>
               </div>
             </div>
 
+            {/* When has medical condition: Disease chips & Other input */}
             {data.medicalHistory === 'มีโรคประจำตัว' && (
-              <div className="mt-3 p-3.5 bg-blue-50/40 rounded-xl border border-blue-200 space-y-3">
-                <div className="flex flex-wrap gap-2">
-                  {['HT', 'DM', 'DLP', 'CKD', 'Epilepsy', 'Thyroid', 'CAD/MI'].map(cond => {
-                    const isSelected = (data.medicalConditions || []).includes(cond);
+              <div className="bg-white p-3.5 rounded-xl border border-blue-100 shadow-2xs space-y-2.5">
+                <span className="text-xs font-bold text-slate-800 block">
+                  เลือกโรคประจำตัวสำคัญ (คลิกเลือกได้มากกว่า 1 ข้อ):
+                </span>
+                <div className="flex flex-wrap gap-1.5 sm:gap-2">
+                  {[
+                    { id: 'HT', label: 'HT (ความดันโลหิตสูง)' },
+                    { id: 'DM', label: 'DM (เบาหวาน)' },
+                    { id: 'DLP', label: 'DLP (ไขมันในเลือดสูง)' },
+                    { id: 'CKD', label: 'CKD (โรคไต)' },
+                    { id: 'Epilepsy', label: 'Epilepsy (โรคลมชัก)' },
+                    { id: 'Thyroid', label: 'Thyroid (ไทรอยด์)' },
+                    { id: 'CAD/MI', label: 'CAD/MI (โรคหัวใจ)' },
+                  ].map(({ id, label }) => {
+                    const isSelected = (data.medicalConditions || []).includes(id);
                     return (
                       <button
-                        key={cond}
+                        key={id}
                         type="button"
-                        onClick={() => toggleArrayItem('medicalConditions', cond)}
-                        className={`px-3 py-1.5 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer select-none ${
-                          isSelected ? 'clay-pill-active' : 'clay-pill-inactive'
+                        onClick={() => toggleArrayItem('medicalConditions', id)}
+                        className={`px-3 py-1.5 text-xs font-bold rounded-full border transition-all flex items-center gap-1.5 cursor-pointer select-none active:scale-95 shadow-2xs ${
+                          isSelected
+                            ? 'bg-blue-600 text-white border-blue-600 ring-1 ring-blue-300'
+                            : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'
                         }`}
                       >
                         {isSelected ? (
@@ -673,7 +710,7 @@ const Step2HistoryAndSymptomsComponent: React.FC<AssessmentStepProps> = ({
                         ) : (
                           <span className="w-3 h-3 rounded-full border border-slate-400/80 shrink-0" />
                         )}
-                        <span>{cond}</span>
+                        <span>{label}</span>
                       </button>
                     );
                   })}
@@ -682,64 +719,83 @@ const Step2HistoryAndSymptomsComponent: React.FC<AssessmentStepProps> = ({
                   type="text"
                   value={data.medicalHistoryOther}
                   onChangeValue={val => onChange({ medicalHistoryOther: val })}
-                  placeholder="ระบุโรคประจำตัวอื่นๆ..."
-                  className="w-full text-xs bg-white border border-slate-300 rounded px-2.5 py-1.5 focus:ring-1 focus:ring-blue-600 focus:outline-none"
+                  placeholder="ระบุโรคประจำตัวอื่นๆ เพิ่มเติม (เช่น มะเร็ง, โรคตับ, ผ่าตัดสมอง)..."
+                  className="w-full text-xs bg-slate-50/70 border border-slate-300 rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-blue-600 focus:outline-none"
                 />
               </div>
             )}
           </div>
 
-          {/* Allergy */}
-          <div className="border-b border-slate-100 pb-4 sm:pb-5">
-            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
-              <span className="text-xs font-bold text-slate-800 uppercase tracking-wider sm:w-64 shrink-0">
-                ประวัติการแพ้ยา/อาหาร:
-              </span>
-              <div className="flex flex-wrap gap-1.5 sm:gap-2">
+          {/* Card 3: ประวัติการแพ้ยาและอาหาร (Allergies) */}
+          <div className="rounded-xl border border-slate-200/90 bg-slate-50/60 p-3.5 sm:p-5 space-y-3.5 shadow-2xs">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4 sm:w-5 sm:h-5 text-amber-500 shrink-0" />
+                <div>
+                  <h4 className="text-xs sm:text-sm font-bold text-slate-900">
+                    3. ประวัติการแพ้ยา / แพ้อาหาร (Allergies)
+                  </h4>
+                  <p className="text-[11px] text-slate-500">ข้อมูลความปลอดภัยของผู้ป่วย (Drug & Food Allergies)</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-1.5 self-start sm:self-auto shrink-0">
                 <button
                   type="button"
                   onClick={() => onChange({ allergy: 'ปฏิเสธการแพ้', allergyDetail: '' })}
-                  className={`px-3 sm:px-4 py-1.5 sm:py-2 min-h-[36px] sm:min-h-[40px] text-xs font-semibold rounded-lg border transition-all cursor-pointer ${
+                  className={`px-3.5 py-1.5 text-xs font-bold rounded-lg border transition-all cursor-pointer flex items-center gap-1.5 ${
                     data.allergy === 'ปฏิเสธการแพ้'
-                      ? 'bg-emerald-600 text-white border-emerald-600 shadow-2xs'
+                      ? 'bg-emerald-600 text-white border-emerald-600 shadow-xs'
                       : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'
                   }`}
                 >
-                  ปฏิเสธการแพ้
+                  {data.allergy === 'ปฏิเสธการแพ้' && <Check className="w-3.5 h-3.5 stroke-[3] text-white shrink-0" />}
+                  <span>ปฏิเสธการแพ้ (NKDA)</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => onChange({ allergy: 'แพ้' })}
-                  className={`px-3 sm:px-4 py-1.5 sm:py-2 min-h-[36px] sm:min-h-[40px] text-xs font-semibold rounded-lg border transition-all cursor-pointer ${
+                  className={`px-3.5 py-1.5 text-xs font-bold rounded-lg border transition-all cursor-pointer flex items-center gap-1.5 ${
                     data.allergy === 'แพ้'
-                      ? 'bg-rose-600 text-white border-rose-600 shadow-2xs'
+                      ? 'bg-rose-600 text-white border-rose-600 shadow-xs ring-2 ring-rose-400/50'
                       : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'
                   }`}
                 >
-                  มีประวัติแพ้
+                  {data.allergy === 'แพ้' && <Check className="w-3.5 h-3.5 stroke-[3] text-white shrink-0" />}
+                  <span>⚠️ มีประวัติแพ้</span>
                 </button>
               </div>
             </div>
+
             {data.allergy === 'แพ้' && (
-              <div className="mt-2.5">
+              <div className="bg-rose-50/70 p-3 rounded-xl border border-rose-200 space-y-1.5">
+                <span className="text-xs font-bold text-rose-900 block flex items-center gap-1">
+                  <AlertTriangle className="w-3.5 h-3.5 text-rose-600" />
+                  ระบุชื่อยา/อาหารและลักษณะอาการแพ้:
+                </span>
                 <DebouncedInput
                   type="text"
                   value={data.allergyDetail}
                   onChangeValue={val => onChange({ allergyDetail: val })}
-                  placeholder="ระบุชื่อยาและอาการที่แพ้ เช่น แพ้ Penicillin ผื่นคัน..."
-                  className="w-full text-xs bg-white border border-rose-300 rounded px-2.5 py-1.5 focus:ring-1 focus:ring-rose-600 focus:outline-none"
+                  placeholder="เช่น แพ้ Penicillin มีผื่นคันลมพิษ, แพ้อาหารทะเล แน่นหน้าอก..."
+                  className="w-full text-xs bg-white border border-rose-300 rounded-lg px-3 py-2 text-rose-950 font-medium focus:ring-2 focus:ring-rose-600 focus:outline-none"
                 />
               </div>
             )}
           </div>
 
-          {/* Substance History */}
-          <div>
-            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-3">
-              <span className="text-xs font-bold text-slate-800 uppercase tracking-wider sm:w-64 shrink-0">
-                ประวัติสารเสพติด:
-              </span>
-              <div className="flex flex-wrap gap-1.5 sm:gap-2">
+          {/* Card 4: ประวัติสารเสพติด สุรา และบุหรี่ (Substance Use, Alcohol & Smoking) */}
+          <div className="rounded-xl border border-slate-200/90 bg-slate-50/60 p-3.5 sm:p-5 space-y-3.5 shadow-2xs">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200/70">
+              <div className="flex items-center gap-2">
+                <Flame className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600 shrink-0" />
+                <div>
+                  <h4 className="text-xs sm:text-sm font-bold text-slate-900">
+                    4. ประวัติสารเสพติด / สุรา / บุหรี่ (Substance History)
+                  </h4>
+                  <p className="text-[11px] text-slate-500">การดื่มสุรา การสูบบุหรี่ ยาบ้า และสารเสพติดอื่นๆ</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-1.5 self-start sm:self-auto shrink-0">
                 <button
                   type="button"
                   onClick={() =>
@@ -753,116 +809,136 @@ const Step2HistoryAndSymptomsComponent: React.FC<AssessmentStepProps> = ({
                       otherSubstancesDetail: '',
                     })
                   }
-                  className={`px-3 sm:px-4 py-1.5 sm:py-2 min-h-[36px] sm:min-h-[40px] text-xs font-semibold rounded-lg border transition-all cursor-pointer ${
+                  className={`px-3.5 py-1.5 text-xs font-bold rounded-lg border transition-all cursor-pointer flex items-center gap-1.5 ${
                     data.substanceHistory === 'ปฏิเสธการใช้'
-                      ? 'bg-emerald-600 text-white border-emerald-600 shadow-2xs'
+                      ? 'bg-emerald-600 text-white border-emerald-600 shadow-xs'
                       : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'
                   }`}
                 >
-                  ปฏิเสธการใช้
+                  {data.substanceHistory === 'ปฏิเสธการใช้' && <Check className="w-3.5 h-3.5 stroke-[3] text-white shrink-0" />}
+                  <span>ปฏิเสธการใช้ทุกชนิด</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => onChange({ substanceHistory: 'มีประวัติ' })}
-                  className={`px-3 sm:px-4 py-1.5 sm:py-2 min-h-[36px] sm:min-h-[40px] text-xs font-semibold rounded-lg border transition-all cursor-pointer ${
+                  className={`px-3.5 py-1.5 text-xs font-bold rounded-lg border transition-all cursor-pointer flex items-center gap-1.5 ${
                     data.substanceHistory === 'มีประวัติ'
-                      ? 'bg-indigo-600 text-white border-indigo-600 shadow-2xs'
+                      ? 'bg-indigo-600 text-white border-indigo-600 shadow-xs ring-1 ring-indigo-400/40'
                       : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'
                   }`}
                 >
-                  มีประวัติ (ระบุสาร)
+                  {data.substanceHistory === 'มีประวัติ' && <Check className="w-3.5 h-3.5 stroke-[3] text-white shrink-0" />}
+                  <span>มีประวัติ (ระบุสาร)</span>
                 </button>
               </div>
             </div>
 
+            {/* When has substance history: 3 structured cards + other substances */}
             {data.substanceHistory === 'มีประวัติ' && (
-              <div className="p-3.5 bg-blue-50/30 rounded-xl border border-blue-200 space-y-3">
+              <div className="space-y-3.5 pt-1">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                  {/* Alcohol */}
-                  <div className="p-2.5 bg-white border border-slate-200 rounded-lg space-y-1.5">
-                    <span className="text-xs font-bold text-slate-800 flex items-center gap-1">
-                      <Wine className="w-3.5 h-3.5 text-blue-600" />
+                  {/* 1. สุรา (Alcohol) */}
+                  <div className="p-3 bg-white border border-slate-200 rounded-xl space-y-2 shadow-2xs">
+                    <span className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                      <Wine className="w-4 h-4 text-blue-600" />
                       สุรา (Alcohol)
                     </span>
-                    <div className="flex flex-wrap gap-1">
+                    <div className="flex flex-col gap-1.5">
                       {(['นานๆ ครั้ง', 'ดื่มประจำ/ติด', 'เพิ่งดื่มล่าสุด < 24 ชม.'] as const).map(alc => (
                         <button
                           key={alc}
                           type="button"
-                          onClick={() => onChange({ alcoholUse: alc })}
-                          className={`px-2 py-1 text-xs rounded border transition-all cursor-pointer ${
+                          onClick={() => onChange({ alcoholUse: data.alcoholUse === alc ? '' : alc })}
+                          className={`w-full px-2.5 py-1.5 text-xs rounded-lg border transition-all text-left flex items-center justify-between cursor-pointer ${
                             data.alcoholUse === alc
-                              ? 'bg-blue-600 text-white border-blue-600 font-bold'
-                              : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'
+                              ? 'bg-blue-600 text-white border-blue-600 font-bold shadow-2xs'
+                              : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
                           }`}
                         >
-                          {alc}
+                          <span>{alc}</span>
+                          {data.alcoholUse === alc && <Check className="w-3.5 h-3.5 stroke-[3] text-white shrink-0" />}
                         </button>
                       ))}
                     </div>
                   </div>
 
-                  {/* Smoking */}
-                  <div className="p-2.5 bg-white border border-slate-200 rounded-lg space-y-1.5">
-                    <span className="text-xs font-bold text-slate-800 flex items-center gap-1">
-                      <Cigarette className="w-3.5 h-3.5 text-amber-600" />
+                  {/* 2. บุหรี่ (Smoking) */}
+                  <div className="p-3 bg-white border border-slate-200 rounded-xl space-y-2 shadow-2xs">
+                    <span className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                      <Cigarette className="w-4 h-4 text-amber-600" />
                       บุหรี่ (Smoking)
                     </span>
-                    <div className="flex flex-wrap gap-1">
+                    <div className="flex flex-col gap-1.5">
                       {(['นานๆ ครั้ง', 'สูบประจำ'] as const).map(smk => (
                         <button
                           key={smk}
                           type="button"
-                          onClick={() => onChange({ smokingUse: smk })}
-                          className={`px-2 py-1 text-xs rounded border transition-all cursor-pointer ${
+                          onClick={() => onChange({ smokingUse: data.smokingUse === smk ? '' : smk })}
+                          className={`w-full px-2.5 py-1.5 text-xs rounded-lg border transition-all text-left flex items-center justify-between cursor-pointer ${
                             data.smokingUse === smk
-                              ? 'bg-amber-600 text-white border-amber-600 font-bold'
-                              : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'
+                              ? 'bg-amber-600 text-white border-amber-600 font-bold shadow-2xs'
+                              : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
                           }`}
                         >
-                          {smk}
+                          <span>{smk}</span>
+                          {data.smokingUse === smk && <Check className="w-3.5 h-3.5 stroke-[3] text-white shrink-0" />}
                         </button>
                       ))}
                     </div>
+                    {data.smokingUse === 'สูบประจำ' && (
+                      <div className="pt-1 flex items-center gap-1.5">
+                        <span className="text-[11px] text-slate-500 font-medium">เฉลี่ยวันละ:</span>
+                        <DebouncedInput
+                          type="text"
+                          value={data.cigarettesPerDay || ''}
+                          onChangeValue={val => onChange({ cigarettesPerDay: val })}
+                          placeholder="เช่น 10"
+                          className="w-16 text-xs bg-slate-50 border border-slate-300 rounded px-2 py-1 text-center font-bold"
+                        />
+                        <span className="text-[11px] text-slate-500">มวน</span>
+                      </div>
+                    )}
                   </div>
 
-                  {/* Methamphetamine */}
-                  <div className="p-2.5 bg-white border border-slate-200 rounded-lg space-y-1.5">
-                    <span className="text-xs font-bold text-slate-800 flex items-center gap-1">
-                      <Flame className="w-3.5 h-3.5 text-rose-600" />
-                      ยาบ้า/ไอซ์ (Meth)
+                  {/* 3. ยาบ้า/ไอซ์ (Methamphetamine) */}
+                  <div className="p-3 bg-white border border-slate-200 rounded-xl space-y-2 shadow-2xs">
+                    <span className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                      <Flame className="w-4 h-4 text-rose-600" />
+                      ยาบ้า/ไอซ์ (Methamphetamine)
                     </span>
-                    <div className="flex flex-wrap gap-1">
+                    <div className="flex flex-col gap-1.5">
                       {(['เคยใช้ในอดีต (เลิกแล้ว)', 'ปัจจุบันยังใช้', 'เพิ่งใช้ล่าสุด < 24 ชม.'] as const).map(mth => (
                         <button
                           key={mth}
                           type="button"
-                          onClick={() => onChange({ methUse: mth })}
-                          className={`px-2 py-1 text-xs rounded border transition-all cursor-pointer ${
+                          onClick={() => onChange({ methUse: data.methUse === mth ? '' : mth })}
+                          className={`w-full px-2.5 py-1.5 text-xs rounded-lg border transition-all text-left flex items-center justify-between cursor-pointer ${
                             data.methUse === mth
-                              ? 'bg-rose-600 text-white border-rose-600 font-bold'
-                              : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'
+                              ? 'bg-rose-600 text-white border-rose-600 font-bold shadow-2xs'
+                              : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
                           }`}
                         >
-                          {mth}
+                          <span>{mth}</span>
+                          {data.methUse === mth && <Check className="w-3.5 h-3.5 stroke-[3] text-white shrink-0" />}
                         </button>
                       ))}
                     </div>
                   </div>
                 </div>
 
-                {/* Other substances */}
-                <div className="p-2.5 bg-white border border-slate-200 rounded-lg space-y-2">
-                  <span className="text-xs font-bold text-slate-800 flex items-center gap-1">
-                    <Pill className="w-3.5 h-3.5 text-purple-600" />
-                    สารเสพติดอื่นๆ (Other Substances)
+                {/* สารเสพติดอื่นๆ (Other Substances) */}
+                <div className="p-3.5 bg-white border border-slate-200 rounded-xl space-y-2.5 shadow-2xs">
+                  <span className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                    <Pill className="w-4 h-4 text-purple-600" />
+                    สารเสพติดอื่นๆ (Other Substances):
                   </span>
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap gap-1.5 sm:gap-2">
                     {[
                       { id: 'กัญชา', label: 'กัญชา (Cannabis)' },
                       { id: 'กระท่อม', label: 'กระท่อม (Kratom)' },
                       { id: 'สารระเหย', label: 'สารระเหย (Inhalants)' },
                       { id: 'Opioid', label: 'Opioid (มอร์ฟีน/เฮโรอีน)' },
+                      { id: 'ยานอนหลับ', label: 'ยานอนหลับ/ยากล่อมประสาท' },
                       { id: 'อื่นๆ', label: 'อื่นๆ (ระบุ)' },
                     ].map(opt => {
                       const isSelected = (data.otherSubstances || []).includes(opt.id);
@@ -871,8 +947,10 @@ const Step2HistoryAndSymptomsComponent: React.FC<AssessmentStepProps> = ({
                           key={opt.id}
                           type="button"
                           onClick={() => toggleArrayItem('otherSubstances', opt.id)}
-                          className={`px-3 py-1.5 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer select-none ${
-                            isSelected ? 'clay-pill-active' : 'clay-pill-inactive'
+                          className={`px-3 py-1.5 text-xs font-bold rounded-full border transition-all flex items-center gap-1.5 cursor-pointer select-none active:scale-95 shadow-2xs ${
+                            isSelected
+                              ? 'bg-purple-600 text-white border-purple-600 ring-1 ring-purple-300'
+                              : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'
                           }`}
                         >
                           {isSelected ? (
@@ -885,13 +963,13 @@ const Step2HistoryAndSymptomsComponent: React.FC<AssessmentStepProps> = ({
                       );
                     })}
                   </div>
-                  {(data.otherSubstances.includes('อื่นๆ') || data.otherSubstances.length > 0 || data.otherSubstancesDetail) && (
+                  {(data.otherSubstances?.includes('อื่นๆ') || (data.otherSubstances || []).length > 0 || data.otherSubstancesDetail) && (
                     <DebouncedInput
                       type="text"
                       value={data.otherSubstancesDetail}
                       onChangeValue={val => onChange({ otherSubstancesDetail: val })}
-                      placeholder="ระบุรายละเอียดสารเสพติด เช่น ดื่มน้ำกระท่อมวันละ 1 ลิตร..."
-                      className="w-full text-xs bg-white border border-slate-300 rounded px-2.5 py-1.5 focus:ring-1 focus:ring-blue-600 focus:outline-none"
+                      placeholder="ระบุรายละเอียดสารเสพติดเพิ่มเติม เช่น ปริมาณ, ความถี่, วิธีใช้..."
+                      className="w-full text-xs bg-slate-50/70 border border-slate-300 rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-purple-600 focus:outline-none"
                     />
                   )}
                 </div>
