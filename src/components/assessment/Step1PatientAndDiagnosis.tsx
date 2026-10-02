@@ -844,24 +844,42 @@ const Step1PatientAndDiagnosisComponent: React.FC<AssessmentStepProps> = ({
         <div className="p-3.5 sm:p-6 space-y-4">
           {/* Diagnostic Category */}
           <div>
-            <label className="block text-xs font-bold text-slate-800 uppercase tracking-wider mb-2">
-              กลุ่มโรคหลัก (Diagnostic Category)
+            <label className="block text-xs font-bold text-slate-800 uppercase tracking-wider mb-2 flex items-center justify-between">
+              <span>กลุ่มโรคหลัก (Diagnostic Category)</span>
+              <span className="text-[11px] text-blue-600 font-semibold normal-case">
+                ✨ เลือกระบบจะนำไปสร้าง Bubbles อาการในขั้นตอนที่ 2 อัตโนมัติ
+              </span>
             </label>
             <div className="flex flex-wrap gap-2">
               {[
-                'F00-F09 Neurocognitive d/o',
-                'F10-F19 Substance-related',
-                'F20-F29 Schizophrenia/Psychotic',
-                'F30-F39 Mood d/o',
-                'F40-F48 Anxiety/Somatoform',
-              ].map(item => {
-                const isSelected = (data.diagnosticCategory || []).includes(item);
+                {
+                  key: 'F20-F29 Schizophrenia/Psychotic',
+                  label: '🧠 F20-F29 Schizophrenia / จิตเภท & โรคจิต',
+                },
+                {
+                  key: 'F30-F39 Mood d/o',
+                  label: '🌧️ F30-F39 Mood Disorders / โรคซึมเศร้า',
+                },
+                {
+                  key: 'F10-F19 Substance-related',
+                  label: '🧪 F10-F19 Substance / สารเสพติดและสุรา',
+                },
+                {
+                  key: 'F00-F09 Neurocognitive d/o',
+                  label: '👴 F00-F09 Neurocognitive / สมองเสื่อม & สับสน',
+                },
+                {
+                  key: 'F40-F48 Anxiety/Somatoform',
+                  label: '😰 F40-F48 Anxiety / วิตกกังวล & Panic',
+                },
+              ].map(({ key, label }) => {
+                const isSelected = (data.diagnosticCategory || []).includes(key);
                 return (
                   <button
-                    key={item}
+                    key={key}
                     type="button"
-                    onClick={() => toggleArrayItem('diagnosticCategory', item)}
-                    className={`px-3 py-1.5 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer select-none ${
+                    onClick={() => toggleArrayItem('diagnosticCategory', key)}
+                    className={`px-3 py-1.5 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer select-none rounded-xl ${
                       isSelected ? 'clay-pill-active' : 'clay-pill-inactive'
                     }`}
                   >
@@ -870,7 +888,7 @@ const Step1PatientAndDiagnosisComponent: React.FC<AssessmentStepProps> = ({
                     ) : (
                       <span className="w-3 h-3 rounded-full border border-slate-400/80 shrink-0" />
                     )}
-                    <span>{item}</span>
+                    <span>{label}</span>
                   </button>
                 );
               })}
@@ -896,37 +914,43 @@ const Step1PatientAndDiagnosisComponent: React.FC<AssessmentStepProps> = ({
             <div className="mb-2 flex flex-wrap gap-1">
               <span className="text-[11px] font-bold text-slate-500 w-full flex items-center gap-1">
                 <Sparkles className="w-3 h-3 text-amber-500" />
-                คลิกเพื่อเลือก ICD-10 ด่วน:
+                คลิกเพื่อเลือก ICD-10 ด่วน (ระบุโรคพร้อมผูกกลุ่มอาการอัตโนมัติ):
               </span>
               {[
                 {
-                  label: '🚨 Severe MDD',
+                  label: '🧠 Schizophrenia (จิตเภท)',
+                  value: 'Schizophrenia, Paranoid type (F20.0)',
+                  category: 'F20-F29 Schizophrenia/Psychotic',
+                  isSevere: false,
+                },
+                {
+                  label: '🚨 Severe MDD (ซึมเศร้ารุนแรง)',
                   value: 'Major Depressive Episode, Severe without Psychotic Features (F32.2)',
+                  category: 'F30-F39 Mood d/o',
                   isSevere: true,
                 },
                 {
-                  label: 'Schizophrenia',
-                  value: 'Schizophrenia, Paranoid type (F20.0)',
-                  isSevere: false,
-                },
-                {
-                  label: 'Bipolar I, Manic',
+                  label: '⚡ Bipolar I, Manic (ไบโพลาร์)',
                   value: 'Bipolar I Disorder, Current episode manic (F31.1)',
+                  category: 'F30-F39 Mood d/o',
                   isSevere: false,
                 },
                 {
-                  label: 'GAD',
+                  label: '😰 GAD (วิตกกังวลทั่วไป)',
                   value: 'Generalized Anxiety Disorder (F41.1)',
+                  category: 'F40-F48 Anxiety/Somatoform',
                   isSevere: false,
                 },
                 {
-                  label: 'Adjustment d/o',
+                  label: '🌧️ Adjustment d/o (การปรับตัวผิดปกติ)',
                   value: 'Adjustment Disorder with depressed mood (F43.21)',
+                  category: 'F40-F48 Anxiety/Somatoform',
                   isSevere: false,
                 },
                 {
-                  label: 'Stimulant psychosis',
+                  label: '🧪 Stimulant psychosis (โรคจิตจากสาร)',
                   value: 'Other stimulants including caffeine, Psychotic disorder, Schizophrenia-like (F15.50)',
+                  category: 'F10-F19 Substance-related',
                   comorbid: 'Stimulant dependence (F15.2)',
                   isSevere: false,
                 },
@@ -935,11 +959,15 @@ const Step1PatientAndDiagnosisComponent: React.FC<AssessmentStepProps> = ({
                   key={dx.value}
                   type="button"
                   onClick={() => {
+                    const newCategories = new Set(data.diagnosticCategory || []);
+                    if (dx.category) newCategories.add(dx.category);
+
                     if (dx.isSevere) {
                       const indications = new Set(data.admissionIndications || []);
                       indications.add('เป็นอันตรายต่อตนเอง (Risk of Harm to Self)');
                       onChange({
                         primaryDiagnosis: dx.value,
+                        diagnosticCategory: Array.from(newCategories),
                         ...(dx.comorbid ? { comorbidDiagnosis: dx.comorbid } : {}),
                         suicideRisk: 'High Risk',
                         admissionIndications: Array.from(indications),
@@ -948,6 +976,7 @@ const Step1PatientAndDiagnosisComponent: React.FC<AssessmentStepProps> = ({
                     } else {
                       onChange({
                         primaryDiagnosis: dx.value,
+                        diagnosticCategory: Array.from(newCategories),
                         ...(dx.comorbid ? { comorbidDiagnosis: dx.comorbid } : {}),
                       });
                     }
