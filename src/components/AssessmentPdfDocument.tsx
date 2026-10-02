@@ -221,6 +221,15 @@ const renderOrientation = (time: boolean, place: boolean, person: boolean) => {
   );
 };
 
+const expandDoToDisorder = (text: string | undefined): string => {
+  if (!text) return '';
+  return text
+    .replace(/\bd\s*\/\s*os\b/gi, 'disorders')
+    .replace(/\bd\s*\/\s*o\b/gi, 'disorder')
+    .replace(/d\/o/gi, 'disorder')
+    .replace(/\bD\/O\b/g, 'disorder');
+};
+
 const pageSheetStyle: React.CSSProperties = {
   width: '210mm',
   minHeight: '297mm',
@@ -353,53 +362,79 @@ const AssessmentPdfDocumentComponent: React.FC<Props> = ({ data, showPageBadges 
     return totalFreeTextLength > 1200;
   }, [data]);
 
-  const renderSectionI = () => (
-    <div className="avoid-break-inside">
-      <div className="border-b border-black pb-0.5 mb-1 text-black font-normal text-[12.5pt]">
-        I. Investigation (การตรวจทางห้องปฏิบัติการและการตรวจพิเศษ)
-      </div>
-      <div className="space-y-0.5 text-[12.5pt]">
-        <div>
-          <span className="font-normal text-slate-800">การตรวจทางห้องปฏิบัติการ:</span> <span className="font-normal text-slate-800">{data.investigationStatus}</span>
-          {data.investigationStatus === 'ส่งตรวจ Lab' && (
-            <span className="ml-2 font-normal text-slate-800">[{data.labTests && data.labTests.join(', ')} {data.labOther && `, ${data.labOther}`}]</span>
-          )}
-          {data.neuroimaging && <span className="ml-3 font-normal text-slate-800">Neuroimaging/EEG/EKG: {data.neuroimaging}</span>}
-        </div>
-      </div>
-    </div>
-  );
+  const renderSectionI = () => {
+    const isLab = data.investigationStatus === 'ส่งตรวจ Lab';
+    const labList = [
+      ...(data.labTests || []),
+      ...(data.labOther ? [data.labOther] : []),
+    ].join(', ');
 
-  const renderSectionJ = () => (
-    <div className="avoid-break-inside">
-      <div className="border-b border-black pb-0.5 mb-1 text-black font-normal text-[12.5pt]">
-        J. Diagnosis (การวินิจฉัยโรค)
-      </div>
-      <div className="space-y-0.5 text-[12.5pt]">
-        <div>
-          <span className="font-normal text-slate-800">กลุ่มโรค (Category):</span>{' '}
-          <span className="font-normal text-slate-800">
-            {data.diagnosticCategory && data.diagnosticCategory.join(', ') || '-'}
-            {data.diagnosticCategoryOther && ` (${data.diagnosticCategoryOther})`}
-          </span>
+    return (
+      <div className="avoid-break-inside">
+        <div className="border-b border-black pb-0.5 mb-1 text-black font-normal text-[12.5pt]">
+          I. Investigation
         </div>
-        <div className="mt-0.5">
-          <span className="font-normal text-black">Primary Diagnosis (ICD-10):</span>{' '}
-          <span className="underline text-black font-bold">{data.primaryDiagnosis || '-'}</span>
+        <div className="space-y-0.5 text-[12.5pt]">
+          <div>
+            {isLab ? (
+              <span className="font-normal text-slate-800">
+                <span className="font-semibold text-black">ส่งตรวจ Lab:</span> [{labList || 'ระบุส่งตรวจ'}]
+              </span>
+            ) : (
+              <span className="font-normal text-slate-800">
+                {data.investigationStatus || '-'}
+              </span>
+            )}
+            {data.neuroimaging && (
+              <span className="ml-3 font-normal text-slate-800">
+                {isLab ? '| ' : ''}Neuroimaging/EEG/EKG: {data.neuroimaging}
+              </span>
+            )}
+          </div>
         </div>
-        {data.differentialDiagnosis && (
-          <div className="mt-0.5">
-            <span className="font-normal text-slate-800">Differential Dx:</span> <span className="font-normal text-slate-800">{data.differentialDiagnosis}</span>
-          </div>
-        )}
-        {data.comorbidDiagnosis && (
-          <div className="mt-0.5">
-            <span className="font-normal text-slate-800">Comorbidity:</span> <span className="font-normal text-slate-800">{data.comorbidDiagnosis}</span>
-          </div>
-        )}
       </div>
-    </div>
-  );
+    );
+  };
+
+  const renderSectionJ = () => {
+    const formattedCategories = (data.diagnosticCategory || [])
+      .map(expandDoToDisorder)
+      .filter(Boolean);
+    const formattedCategoryOther = data.diagnosticCategoryOther
+      ? expandDoToDisorder(data.diagnosticCategoryOther)
+      : '';
+
+    return (
+      <div className="avoid-break-inside">
+        <div className="border-b border-black pb-0.5 mb-1 text-black font-normal text-[12.5pt]">
+          J. Diagnosis (การวินิจฉัยโรค)
+        </div>
+        <div className="space-y-0.5 text-[12.5pt]">
+          <div>
+            <span className="font-normal text-slate-800">กลุ่มโรค (Category):</span>{' '}
+            <span className="font-normal text-slate-800">
+              {formattedCategories.length > 0 ? formattedCategories.join(', ') : '-'}
+              {formattedCategoryOther && ` (${formattedCategoryOther})`}
+            </span>
+          </div>
+          <div className="mt-0.5">
+            <span className="font-normal text-black">Primary Diagnosis (ICD-10):</span>{' '}
+            <span className="underline text-black font-bold">{expandDoToDisorder(data.primaryDiagnosis) || '-'}</span>
+          </div>
+          {data.differentialDiagnosis && (
+            <div className="mt-0.5">
+              <span className="font-normal text-slate-800">Differential Dx:</span> <span className="font-normal text-slate-800">{expandDoToDisorder(data.differentialDiagnosis)}</span>
+            </div>
+          )}
+          {data.comorbidDiagnosis && (
+            <div className="mt-0.5">
+              <span className="font-normal text-slate-800">Comorbidity:</span> <span className="font-normal text-slate-800">{expandDoToDisorder(data.comorbidDiagnosis)}</span>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
 
   const renderSectionK = () => (
     <div className="avoid-break-inside">
@@ -501,117 +536,113 @@ const AssessmentPdfDocumentComponent: React.FC<Props> = ({ data, showPageBadges 
     <div className="a4-page-sheet shadow-xl print:shadow-none" style={pageSheetStyle}>
       <div className="flex-1 flex flex-col justify-between">
         <div>
-          {/* Official Header */}
-          <div className="border-b-2 border-black pb-1.5 mb-2" style={{ borderBottom: '2px solid #000000', paddingBottom: '6px', marginBottom: '8px' }}>
-            {/* Top Row: Authentic Full-Color Emblem + Hospital Name | Date & Time Box */}
-            <div className="flex justify-between items-center gap-3" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
-              <div className="flex items-center gap-3" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <div className="shrink-0 flex items-center justify-center" style={{ flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <img
-                    src="/Official_emblem_of_Bhumibol_Adulyadej_Hospital.jpg"
-                    alt="ตราสัญลักษณ์ โรงพยาบาลภูมิพลอดุลยเดช"
-                    className="w-auto object-contain shrink-0"
-                    style={{
-                      height: '48pt',
-                      maxHeight: '48pt',
-                      aspectRatio: '200 / 283',
-                      flexShrink: 0,
-                    }}
-                    referrerPolicy="no-referrer"
-                  />
-                </div>
-                <div className="flex flex-col justify-center" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+          {/* Official Header: 3 Boxes Ordered 1 -> 2 -> 3 from Top to Bottom */}
+          <div className="pb-1 mb-2" style={{ paddingBottom: '4px', marginBottom: '8px' }}>
+            {/* Box 1: Hospital Header (Emblem + Hospital Name) */}
+            <div
+              className="border border-black rounded-xs px-3 py-1 bg-[#fcfcfc] mb-1.5"
+              style={{
+                border: '1px solid #000000',
+                padding: '4px 12px',
+                backgroundColor: '#fcfcfc',
+                marginBottom: '6px',
+              }}
+            >
+              <div className="flex items-center justify-center gap-3.5" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '14px' }}>
+                <img
+                  src="/Official_emblem_of_Bhumibol_Adulyadej_Hospital.jpg"
+                  alt="ตราสัญลักษณ์ โรงพยาบาลภูมิพลอดุลยเดช"
+                  className="w-auto object-contain shrink-0"
+                  style={{
+                    height: '38pt',
+                    maxHeight: '38pt',
+                    aspectRatio: '200 / 283',
+                    flexShrink: 0,
+                  }}
+                  referrerPolicy="no-referrer"
+                />
+                <div className="text-center" style={{ textAlign: 'center' }}>
                   <div
-                    className="uppercase tracking-wider font-normal text-black leading-tight"
-                    style={{ fontSize: '12pt', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#000000', lineHeight: 1.2 }}
+                    className="uppercase tracking-wider font-bold text-black leading-tight"
+                    style={{ fontSize: '13pt', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#000000', lineHeight: 1.2, fontWeight: 'bold' }}
                   >
                     Bhumibol Adulyadej Hospital
                   </div>
                   <div
                     className="text-black font-normal leading-snug"
-                    style={{ fontSize: '11.5pt', color: '#000000', lineHeight: 1.3 }}
+                    style={{ fontSize: '12pt', color: '#000000', lineHeight: 1.3 }}
                   >
                     กองจิตเวชและประสาทวิทยา โรงพยาบาลภูมิพลอดุลยเดช
                   </div>
                 </div>
               </div>
-
-              {/* Dept, Date, Time Box */}
-              <div
-                className="text-right leading-snug border border-black p-1 px-2.5 rounded-xs bg-white shrink-0 min-w-40 text-black"
-                style={{
-                  fontSize: '11pt',
-                  textAlign: 'right',
-                  lineHeight: 1.3,
-                  border: '1px solid #000000',
-                  padding: '4px 10px',
-                  backgroundColor: '#ffffff',
-                  flexShrink: 0,
-                  minWidth: '160px',
-                  color: '#000000',
-                }}
-              >
-                <div>
-                  <span className="font-normal">แผนก:</span> <span className="font-normal">{data.department || 'จิตเวชศาสตร์'}</span>
-                </div>
-                <div>
-                  <span className="font-normal">วันที่:</span> <span className="font-normal">{data.assessmentDate || '-'}</span>
-                </div>
-                <div>
-                  <span className="font-normal">เวลา:</span> <span className="font-normal">{data.assessmentTime || '-'} น.</span>
-                </div>
-              </div>
             </div>
 
-            {/* Framed Title Box: แบบบันทึกแรกรับผู้ป่วยจิตเวช (Mental Health Admission Form) */}
+            {/* Box 2: Form Title Box */}
             <div
-              className="border-2 border-black rounded-xs px-3 py-1 text-center bg-[#fcfcfc] my-1.5"
+              className="border-2 border-black rounded-xs px-3 py-1 text-center bg-[#fcfcfc] mb-1.5"
               style={{
                 border: '2px solid #000000',
                 textAlign: 'center',
                 backgroundColor: '#fcfcfc',
                 padding: '4px 12px',
-                margin: '6px 0',
+                marginBottom: '6px',
               }}
             >
               <h1
-                className="font-normal text-black tracking-wide"
-                style={{ fontSize: '14.5pt', lineHeight: 1.2, margin: 0, fontWeight: 'normal', color: '#000000', textAlign: 'center' }}
+                className="font-bold text-black tracking-wide"
+                style={{ fontSize: '14.5pt', lineHeight: 1.2, margin: 0, fontWeight: 'bold', color: '#000000', textAlign: 'center' }}
               >
                 แบบบันทึกแรกรับผู้ป่วยจิตเวช
               </h1>
               <div
                 className="font-normal text-black tracking-wide"
-                style={{ fontSize: '12pt', lineHeight: 1.1, margin: 0, fontWeight: 'normal', color: '#000000', textAlign: 'center' }}
+                style={{ fontSize: '11.5pt', lineHeight: 1.1, margin: 0, fontWeight: 'normal', color: '#000000', textAlign: 'center' }}
               >
                 (Mental Health Admission Form)
               </div>
             </div>
 
-            {/* Admission Type & Identification Strip */}
+            {/* Box 3: Admission & Registration Details Box */}
             <div
-              className="flex items-center justify-between pt-0.5 border-t border-black text-black"
+              className="border border-black rounded-xs px-3 py-1 bg-white text-black"
               style={{
-                fontSize: '13pt',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                paddingTop: '2px',
-                borderTop: '1px solid #000000',
+                border: '1px solid #000000',
+                padding: '3px 10px',
+                backgroundColor: '#ffffff',
                 color: '#000000',
+                fontSize: '11.5pt',
               }}
             >
-              <div className="flex items-center space-x-6" style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
-                <span className="font-normal">ประเภทการรับผู้ป่วย:</span>
-                <span>{renderCheck(data.admissionType === 'OPD')} OPD</span>
-                <span>{renderCheck(data.admissionType === 'IPD')} IPD</span>
-                <span>{renderCheck(data.admissionType === 'ER')} ER</span>
-              </div>
-              <div className="text-[13pt]" style={{ fontSize: '13pt' }}>
-                <span className="font-normal">HN:</span> <span className="font-normal text-black">{data.hn || '________'}</span>
-                <span className="ml-4" style={{ marginLeft: '16px' }}>
-                  <span className="font-normal">AN:</span> <span className="font-normal text-black">{data.an || '-'}</span>
-                </span>
+              <div
+                className="flex items-center justify-between text-[11.5pt]"
+                style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', fontSize: '11.5pt' }}
+              >
+                <div className="flex items-center gap-4" style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                  <span className="font-normal">ประเภทการรับผู้ป่วย:</span>
+                  <span>{renderCheck(data.admissionType === 'OPD')} OPD</span>
+                  <span>{renderCheck(data.admissionType === 'IPD')} IPD</span>
+                  <span>{renderCheck(data.admissionType === 'ER')} ER</span>
+                  <span className="text-slate-300">|</span>
+                  <span>
+                    <span className="font-normal">แผนก:</span> <span className="font-normal">{data.department || 'จิตเวชศาสตร์'}</span>
+                  </span>
+                </div>
+                <div className="flex items-center gap-3.5" style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                  <span>
+                    <span className="font-normal">วันที่:</span> <span className="font-normal">{data.assessmentDate || '-'}</span>
+                  </span>
+                  <span>
+                    <span className="font-normal">เวลา:</span> <span className="font-normal">{data.assessmentTime ? `${data.assessmentTime} น.` : '-'}</span>
+                  </span>
+                  <span className="text-slate-300">|</span>
+                  <span>
+                    <span className="font-normal">HN:</span> <span className="font-bold text-black">{data.hn || '________'}</span>
+                  </span>
+                  <span>
+                    <span className="font-normal">AN:</span> <span className="font-normal text-black">{data.an || '-'}</span>
+                  </span>
+                </div>
               </div>
             </div>
           </div>
@@ -669,8 +700,8 @@ const AssessmentPdfDocumentComponent: React.FC<Props> = ({ data, showPageBadges 
               <div>
                 <span className="font-normal text-slate-800" style={{ color: '#1e293b' }}>อาการสำคัญ (CC):</span>{' '}
                 <span className="font-semibold text-black" style={{ fontWeight: 'bold', color: '#000000' }}>
-                  {data.chiefComplaint && data.chiefComplaint.length > 0 ? data.chiefComplaint.join(', ') : '-'}
-                  {data.chiefComplaintOther && ` (${data.chiefComplaintOther})`}
+                  {data.chiefComplaint && data.chiefComplaint.length > 0 ? data.chiefComplaint.map(expandDoToDisorder).join(', ') : '-'}
+                  {data.chiefComplaintOther && ` (${expandDoToDisorder(data.chiefComplaintOther)})`}
                 </span>
               </div>
 
@@ -702,7 +733,7 @@ const AssessmentPdfDocumentComponent: React.FC<Props> = ({ data, showPageBadges 
                 <div className="p-1 bg-[#fcfcfc] border border-slate-300 rounded mt-0.5" style={{ padding: '4px', backgroundColor: '#fcfcfc', border: '1px solid #cbd5e1', borderRadius: '4px', marginTop: '2px' }}>
                   <span className="font-normal text-slate-800" style={{ color: '#1e293b' }}>รายละเอียดประวัติปัจจุบัน (HPI):</span>
                   <p className="whitespace-pre-wrap mt-0.5 text-justify leading-snug line-clamp-4 font-normal" style={{ whiteSpace: 'pre-wrap', marginTop: '2px', textAlign: 'justify', lineHeight: 1.3, fontWeight: 'normal', margin: 0 }}>
-                    {data.hpiDetails}
+                    {expandDoToDisorder(data.hpiDetails)}
                   </p>
                 </div>
               )}
@@ -730,9 +761,9 @@ const AssessmentPdfDocumentComponent: React.FC<Props> = ({ data, showPageBadges 
                   <span className={data.psychiatricHistory === 'มีประวัติ' ? 'font-semibold text-black' : 'font-normal text-slate-700'}>
                     {data.psychiatricHistory}
                     {data.psychiatricDisorders && data.psychiatricDisorders.length > 0 && (
-                      <span> [{data.psychiatricDisorders.join(', ')}]</span>
+                      <span> [{data.psychiatricDisorders.map(expandDoToDisorder).join(', ')}]</span>
                     )}
-                    {data.psychiatricDisorderOther && ` (${data.psychiatricDisorderOther})`}
+                    {data.psychiatricDisorderOther && ` (${expandDoToDisorder(data.psychiatricDisorderOther)})`}
                   </span>
                 </div>
                 <div className="col-span-6" style={{ width: '50%', boxSizing: 'border-box' }}>
@@ -750,9 +781,9 @@ const AssessmentPdfDocumentComponent: React.FC<Props> = ({ data, showPageBadges 
                   <span className={data.medicalHistory === 'มีโรคประจำตัว' ? 'font-semibold text-black' : 'font-normal text-slate-700'}>
                     {data.medicalHistory}
                     {data.medicalConditions && data.medicalConditions.length > 0 && (
-                      <span> [{data.medicalConditions.join(', ')}]</span>
+                      <span> [{data.medicalConditions.map(expandDoToDisorder).join(', ')}]</span>
                     )}
-                    {data.medicalHistoryOther && ` (${data.medicalHistoryOther})`}
+                    {data.medicalHistoryOther && ` (${expandDoToDisorder(data.medicalHistoryOther)})`}
                   </span>
                 </div>
                 <div className="col-span-6" style={{ width: '50%', boxSizing: 'border-box' }}>

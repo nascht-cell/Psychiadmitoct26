@@ -299,10 +299,10 @@ export default function App() {
       const first = emptyFields[0];
       
       // Auto-switch to the step containing the missing required field
-      if (['hn', 'fullName', 'age', 'gender'].includes(first.key)) {
+      if (['hn', 'fullName', 'age', 'gender', 'firstName', 'lastName'].includes(first.key)) {
         setCurrentStep(1);
       } else if (['physicianName'].includes(first.key)) {
-        setCurrentStep(4);
+        setCurrentStep(5);
       }
 
       setTimeout(() => {

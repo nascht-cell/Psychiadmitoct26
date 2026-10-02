@@ -1,10 +1,11 @@
 import React, { useCallback, useRef, useMemo } from 'react';
 import { PsychiatricAssessment } from '../types/assessment';
-import { Step1PatientAndComplaint } from './assessment/Step1PatientAndComplaint';
-import { Step2PastAndPsychosocial } from './assessment/Step2PastAndPsychosocial';
-import { Step3MseAndRisk } from './assessment/Step3MseAndRisk';
-import { Step4PhysicalAndPlan } from './assessment/Step4PhysicalAndPlan';
-import { CheckCircle2, ChevronRight, ChevronLeft, LayoutList, Layers, Sparkles } from 'lucide-react';
+import { Step1PatientAndDiagnosis } from './assessment/Step1PatientAndDiagnosis';
+import { Step2HistoryAndSymptoms } from './assessment/Step2HistoryAndSymptoms';
+import { Step3ExaminationAndFindings } from './assessment/Step3ExaminationAndFindings';
+import { Step4RiskAssessment } from './assessment/Step4RiskAssessment';
+import { Step5PlanAndManagement } from './assessment/Step5PlanAndManagement';
+import { CheckCircle2, ChevronRight, ChevronLeft, LayoutList, Layers } from 'lucide-react';
 
 interface Props {
   data: PsychiatricAssessment;
@@ -25,27 +26,33 @@ interface Props {
 const STEPS = [
   {
     id: 1,
-    title: 'ผู้ป่วย & อาการสำคัญ',
-    shortTitle: '1. ผู้ป่วย & อาการ',
-    subtitle: 'ข้อมูลทั่วไป, อาการสำคัญ และประวัติการป่วยปัจจุบัน (HPI)',
+    title: 'ผู้ป่วย & การวินิจฉัยโรค',
+    shortTitle: '1. ผู้ป่วย & วินิจฉัย',
+    subtitle: 'ข้อมูลทั่วไป, สิทธิ, ผู้ให้ประวัติ และการวินิจฉัยหลัก/โรคร่วม (Primary Dx, ICD-10)',
   },
   {
     id: 2,
-    title: 'ประวัติอดีต & ครอบครัว',
-    shortTitle: '2. ประวัติอดีต',
-    subtitle: 'ประวัติทางจิตเวช, โรคประจำตัว, ยาเดิม, สารเสพติด และครอบครัว',
+    title: 'อาการสำคัญ & ประวัติเจ็บป่วย',
+    shortTitle: '2. อาการ & ประวัติ',
+    subtitle: 'อาการสำคัญ (CC), ประวัติปัจจุบัน (HPI), ประวัติเดิม, สารเสพติด และจิตสังคม',
   },
   {
     id: 3,
-    title: 'ตรวจสภาพจิต (MSE) & ความเสี่ยง',
-    shortTitle: '3. ตรวจสภาพจิต',
-    subtitle: 'การตรวจสภาพจิตอย่างละเอียด และการประเมินความเสี่ยงทำร้ายตนเอง/ผู้อื่น',
+    title: 'ตรวจสภาพจิต, ร่างกาย & ผลตรวจ',
+    shortTitle: '3. ตรวจร่างกาย & MSE',
+    subtitle: 'การตรวจสภาพจิต (MSE), สัญญาณชีพ/ร่างกาย, แบบประเมิน และการส่งตรวจ Lab',
   },
   {
     id: 4,
-    title: 'ตรวจร่างกาย, วินิจฉัย & แผน',
-    shortTitle: '4. ร่างกาย & แผน',
-    subtitle: 'สัญญาณชีพ, การตรวจร่างกาย/ประสาท, โรคที่วินิจฉัย (ICD-10) และแผนการรักษา',
+    title: 'ประเมินความเสี่ยง & ความปลอดภัย',
+    shortTitle: '4. ความเสี่ยง (Risks)',
+    subtitle: 'ความเสี่ยงทำร้ายตนเอง, ความรุนแรง, ความเสี่ยงอื่นๆ และแผนความปลอดภัย',
+  },
+  {
+    id: 5,
+    title: 'แผนการรักษา & คำสั่งรับไว้รักษา',
+    shortTitle: '5. แผนการรักษา',
+    subtitle: 'การใช้ยา, การรักษาไม่ใช้ยา, สหวิชาชีพ, ข้อบ่งชี้การรับไว้ใน รพ. และลงชื่อแพทย์',
   },
 ];
 
@@ -148,30 +155,34 @@ const PsychiatricAssessmentFormComponent: React.FC<Props> = ({
     const current = (dataRef.current[field] as string[]) || [];
     const isNormal = isNormalMseOption(field, item);
 
-    if (current.includes(item)) {
-      onChange({ [field]: current.filter(i => i !== item) });
+    if (isNormal) {
+      const updated = current.includes(item) ? [] : [item];
+      onChange({ [field]: updated });
     } else {
-      if (isNormal) {
-        const extraUpdates: Partial<PsychiatricAssessment> = {};
-        if (field === 'thoughtContent') {
-          extraUpdates.delusionDetail = '';
-        }
-        onChange({ [field]: [item], ...extraUpdates });
-      } else {
-        const filtered = current.filter(i => !isNormalMseOption(field, i));
-        onChange({ [field]: [...filtered, item] });
-      }
+      const withoutNormal = current.filter(i => !isNormalMseOption(field, i));
+      const updated = withoutNormal.includes(item)
+        ? withoutNormal.filter(i => i !== item)
+        : [...withoutNormal, item];
+      onChange({ [field]: updated });
     }
   }, [onChange, isNormalMseOption]);
 
   const handleDurationChange = useCallback((dur: string) => {
-    let newOnset = dataRef.current.onset;
-    if (dur === '1 วัน' || dur === '< 1 สัปดาห์' || dur === '1-4 สัปดาห์') {
-      newOnset = 'เฉียบพลัน (Acute)';
-    } else if (dur === '1-6 เดือน' || dur === '> 6 เดือน') {
-      newOnset = 'ค่อยเป็นค่อยไป (Gradual)';
+    const defaultOnsets: Record<string, 'เฉียบพลัน (Acute)' | 'ค่อยเป็นค่อยไป (Gradual)'> = {
+      '1 วัน': 'เฉียบพลัน (Acute)',
+      '< 1 สัปดาห์': 'เฉียบพลัน (Acute)',
+      '1-4 สัปดาห์': 'ค่อยเป็นค่อยไป (Gradual)',
+      '1-6 เดือน': 'ค่อยเป็นค่อยไป (Gradual)',
+      '> 6 เดือน': 'ค่อยเป็นค่อยไป (Gradual)',
+    };
+
+    const typedDur = dur as PsychiatricAssessment['duration'];
+    const suggestedOnset = defaultOnsets[dur];
+    if (!dataRef.current.onset && suggestedOnset) {
+      onChange({ duration: typedDur, onset: suggestedOnset });
+    } else {
+      onChange({ duration: typedDur });
     }
-    onChange({ duration: dur as any, onset: newOnset });
   }, [onChange]);
 
   const handleSuicideRiskChange = useCallback((risk: 'No Risk' | 'Low Risk' | 'Moderate Risk' | 'High Risk') => {
@@ -196,14 +207,27 @@ const PsychiatricAssessmentFormComponent: React.FC<Props> = ({
     onChange({ violenceRisk: risk, admissionIndications: Array.from(indications) });
   }, [onChange]);
 
-  // Step Completion Check
+  // Step Completion Check (5 stages aligned with physician workflow)
   const stepCompletionStatus = useMemo(() => {
-    const step1 = Boolean(data.hn?.trim() && data.fullName?.trim() && data.age && data.gender && (data.chiefComplaint?.length || data.hpiDetails?.trim()));
-    const step2 = Boolean(data.psychiatricHistory || data.medicalHistory || data.substanceHistory);
-    const step3 = Boolean(data.appearanceBehavior?.length || data.moodAffect?.length || data.suicideRisk);
-    const step4 = Boolean(data.primaryDiagnosis?.trim() && data.physicianName?.trim());
+    const step1 = Boolean(
+      data.hn?.trim() &&
+      data.fullName?.trim() &&
+      data.age &&
+      data.gender &&
+      data.primaryDiagnosis?.trim()
+    );
+    const step2 = Boolean(
+      (data.chiefComplaint?.length || data.hpiDetails?.trim()) &&
+      (data.psychiatricHistory || data.medicalHistory || data.substanceHistory)
+    );
+    const step3 = Boolean(
+      (data.appearanceBehavior?.length || data.moodAffect?.length) &&
+      (data.bpSys || data.generalAppearance)
+    );
+    const step4 = Boolean(data.suicideRisk && data.violenceRisk);
+    const step5 = Boolean(data.physicianName?.trim());
 
-    return { 1: step1, 2: step2, 3: step3, 4: step4 };
+    return { 1: step1, 2: step2, 3: step3, 4: step4, 5: step5 };
   }, [data]);
 
   const stepProps = {
@@ -223,7 +247,7 @@ const PsychiatricAssessmentFormComponent: React.FC<Props> = ({
 
   return (
     <div className="space-y-4 sm:space-y-6 pb-20">
-      {/* Step Header & View Mode Switcher (Clay Floating Bar, non-sticky on mobile, sticky on desktop) */}
+      {/* Step Header & View Mode Switcher */}
       <div className="clay-surface p-2.5 sm:p-4 relative md:sticky md:top-24 z-20 bg-white/95 backdrop-blur-md mb-4 sm:mb-6">
         <div className="flex items-center justify-between gap-2 pb-2 sm:pb-3 border-b border-slate-200/80 flex-wrap">
           <div className="flex items-center gap-1.5 sm:gap-2">
@@ -231,7 +255,7 @@ const PsychiatricAssessmentFormComponent: React.FC<Props> = ({
               โหมดการประเมิน
             </span>
             <span className="text-xs text-slate-600 font-bold hidden sm:inline">
-              {viewMode === 'wizard' ? 'กรอกทีละขั้นตอน (Wizard Mode)' : 'แสดงฟอร์มทั้งหมดบนหน้าเดียว (Full Form)'}
+              {viewMode === 'wizard' ? 'กรอกตามลำดับความคิดแพทย์ (5 ขั้นตอน)' : 'แสดงฟอร์มทั้งหมดบนหน้าเดียว (Full Form)'}
             </span>
           </div>
 
@@ -264,14 +288,14 @@ const PsychiatricAssessmentFormComponent: React.FC<Props> = ({
           </div>
         </div>
 
-        {/* Step Navigation Tabs: 4 compact columns across all mobile & desktop screens */}
-        <div className="grid grid-cols-4 gap-1.5 sm:gap-2 md:gap-2.5 pt-2 sm:pt-3">
+        {/* Step Navigation Tabs: 5 responsive columns */}
+        <div className="grid grid-cols-5 gap-1 sm:gap-2 md:gap-2.5 pt-2 sm:pt-3">
           {STEPS.map((step) => {
             const isActive = activeStep === step.id;
             const isCompleted = stepCompletionStatus[step.id as keyof typeof stepCompletionStatus];
             const hasError = Object.keys(errors).some(k => {
-              if (step.id === 1) return ['hn', 'fullName', 'age', 'gender'].includes(k);
-              if (step.id === 4) return ['physicianName'].includes(k);
+              if (step.id === 1) return ['hn', 'fullName', 'age', 'gender', 'primaryDiagnosis'].includes(k);
+              if (step.id === 5) return ['physicianName'].includes(k);
               return false;
             });
 
@@ -280,7 +304,7 @@ const PsychiatricAssessmentFormComponent: React.FC<Props> = ({
                 key={step.id}
                 type="button"
                 onClick={() => setActiveStep(step.id)}
-                className={`relative text-left p-2 sm:p-3 rounded-xl sm:rounded-2xl transition-all cursor-pointer flex flex-col justify-between min-h-[46px] sm:min-h-[64px] ${
+                className={`relative text-left p-1.5 sm:p-3 rounded-xl sm:rounded-2xl transition-all cursor-pointer flex flex-col justify-between min-h-[46px] sm:min-h-[64px] ${
                   isActive
                     ? 'clay-card-blue ring-2 ring-blue-400 font-extrabold text-blue-950 scale-[1.01]'
                     : hasError
@@ -291,19 +315,19 @@ const PsychiatricAssessmentFormComponent: React.FC<Props> = ({
                 }`}
               >
                 <div className="flex items-center justify-between gap-0.5 sm:gap-1 w-full">
-                  <span className="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-tight text-slate-600">
+                  <span className="text-[9px] sm:text-[11px] font-extrabold uppercase tracking-tight text-slate-600">
                     <span className="hidden xs:inline">ขั้น </span>{step.id}
                   </span>
                   {hasError ? (
-                    <span className="text-[8px] sm:text-[10px] font-bold text-rose-700 bg-rose-100/90 px-1 sm:px-2 py-0.2 rounded-full border border-rose-300">
+                    <span className="text-[7px] sm:text-[10px] font-bold text-rose-700 bg-rose-100/90 px-1 sm:px-1.5 py-0.2 rounded-full border border-rose-300">
                       ไม่ครบ
                     </span>
                   ) : isCompleted ? (
-                    <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-700 shrink-0" />
+                    <CheckCircle2 className="w-3 h-3 sm:w-4 sm:h-4 text-emerald-700 shrink-0" />
                   ) : null}
                 </div>
 
-                <div className="text-[11px] sm:text-xs md:text-sm font-extrabold truncate mt-0.5 sm:mt-1">
+                <div className="text-[10px] sm:text-xs md:text-sm font-extrabold truncate mt-0.5 sm:mt-1">
                   <span className="sm:hidden">{step.shortTitle.replace(/^\d+\.\s*/, '')}</span>
                   <span className="hidden sm:inline">{step.title}</span>
                 </div>
@@ -316,10 +340,11 @@ const PsychiatricAssessmentFormComponent: React.FC<Props> = ({
       {/* Form Content Rendering */}
       {viewMode === 'wizard' ? (
         <div className="space-y-6">
-          {activeStep === 1 && <Step1PatientAndComplaint {...stepProps} />}
-          {activeStep === 2 && <Step2PastAndPsychosocial {...stepProps} />}
-          {activeStep === 3 && <Step3MseAndRisk {...stepProps} />}
-          {activeStep === 4 && <Step4PhysicalAndPlan {...stepProps} />}
+          {activeStep === 1 && <Step1PatientAndDiagnosis {...stepProps} />}
+          {activeStep === 2 && <Step2HistoryAndSymptoms {...stepProps} />}
+          {activeStep === 3 && <Step3ExaminationAndFindings {...stepProps} />}
+          {activeStep === 4 && <Step4RiskAssessment {...stepProps} />}
+          {activeStep === 5 && <Step5PlanAndManagement {...stepProps} />}
 
           {/* Bottom Wizard Navigation Footer Bar */}
           <div className="flex items-center justify-between gap-3 pt-4 border-t border-slate-200">
@@ -337,22 +362,22 @@ const PsychiatricAssessmentFormComponent: React.FC<Props> = ({
             )}
 
             <div className="text-xs font-semibold text-slate-500 hidden sm:block">
-              ขั้นตอนที่ {activeStep} จาก 4: {STEPS[activeStep - 1].title}
+              ขั้นตอนที่ {activeStep} จาก 5: {STEPS[activeStep - 1].title}
             </div>
 
-            {activeStep < 4 ? (
+            {activeStep < 5 ? (
               <button
                 type="button"
                 onClick={() => setActiveStep(activeStep + 1)}
                 className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all shadow-md cursor-pointer ml-auto"
               >
-                <span>ขั้นตอนถัดไป ({activeStep + 1}/4)</span>
+                <span>ขั้นตอนถัดไป ({activeStep + 1}/5)</span>
                 <ChevronRight className="w-4 h-4" />
               </button>
             ) : (
               <div className="text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3.5 py-2 rounded-xl flex items-center gap-1.5 ml-auto">
                 <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                <span>ครบทั้ง 4 ขั้นตอน พร้อมออกรายงาน PDF</span>
+                <span>ครบทั้ง 5 ขั้นตอน พร้อมออกรายงาน PDF</span>
               </div>
             )}
           </div>
@@ -361,16 +386,19 @@ const PsychiatricAssessmentFormComponent: React.FC<Props> = ({
         /* Full Form View */
         <div className="space-y-8">
           <section id="step-section-1" className="scroll-mt-32">
-            <Step1PatientAndComplaint {...stepProps} />
+            <Step1PatientAndDiagnosis {...stepProps} />
           </section>
           <section id="step-section-2" className="scroll-mt-32">
-            <Step2PastAndPsychosocial {...stepProps} />
+            <Step2HistoryAndSymptoms {...stepProps} />
           </section>
           <section id="step-section-3" className="scroll-mt-32">
-            <Step3MseAndRisk {...stepProps} />
+            <Step3ExaminationAndFindings {...stepProps} />
           </section>
           <section id="step-section-4" className="scroll-mt-32">
-            <Step4PhysicalAndPlan {...stepProps} />
+            <Step4RiskAssessment {...stepProps} />
+          </section>
+          <section id="step-section-5" className="scroll-mt-32">
+            <Step5PlanAndManagement {...stepProps} />
           </section>
         </div>
       )}
@@ -379,4 +407,3 @@ const PsychiatricAssessmentFormComponent: React.FC<Props> = ({
 };
 
 export const PsychiatricAssessmentForm = React.memo(PsychiatricAssessmentFormComponent);
-
