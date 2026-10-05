@@ -190,33 +190,22 @@ const renderOrientation = (time: boolean, place: boolean, person: boolean) => {
   if (time && place && person) {
     return <span className="text-slate-700 font-normal">Intact (Time, Place, Person)</span>;
   }
-  const parts = [];
-  if (time) {
-    parts.push(<span className="text-slate-700 font-normal">Time ✓</span>);
-  } else {
-    parts.push(<span className="text-black font-bold">Time ✗</span>);
-  }
-
-  if (place) {
-    parts.push(<span className="text-slate-700 font-normal">Place ✓</span>);
-  } else {
-    parts.push(<span className="text-black font-bold">Place ✗</span>);
-  }
-
-  if (person) {
-    parts.push(<span className="text-slate-700 font-normal">Person ✓</span>);
-  } else {
-    parts.push(<span className="text-black font-bold">Person ✗</span>);
-  }
+  const impaired: string[] = [];
+  const intact: string[] = [];
+  if (!time) impaired.push('time'); else intact.push('Time');
+  if (!place) impaired.push('place'); else intact.push('Place');
+  if (!person) impaired.push('person'); else intact.push('Person');
 
   return (
-    <div className="flex gap-x-2 flex-wrap items-center">
-      {parts.map((p, idx) => (
-        <React.Fragment key={idx}>
-          {idx > 0 && <span className="text-slate-300 text-[11pt] font-normal">·</span>}
-          {p}
-        </React.Fragment>
-      ))}
+    <div className="flex gap-x-1.5 flex-wrap items-center">
+      <span className="text-black font-bold">
+        Impairment of {impaired.join(', ')} orientation
+      </span>
+      {intact.length > 0 && (
+        <span className="text-slate-600 font-normal">
+          ({intact.join(', ')}: Intact)
+        </span>
+      )}
     </div>
   );
 };
@@ -964,13 +953,16 @@ const AssessmentPdfDocumentComponent: React.FC<Props> = ({ data, showPageBadges 
               F. Physical & Functional Assessment
             </div>
             <div className="space-y-0.5 text-[12.5pt]" style={{ fontSize: '12.5pt' }}>
-              <div className="p-0.5 border border-slate-300 rounded bg-[#fcfcfc] grid grid-cols-6 gap-1 text-center text-[11.5pt] pdf-grid-6" style={{ display: 'flex', width: '100%', border: '1px solid #cbd5e1', backgroundColor: '#fcfcfc', textAlign: 'center', fontSize: '11.5pt', padding: '2px 4px' }}>
-                <div style={{ width: '16.666%' }}>BP: <span className="font-normal">{data.bpSys && data.bpDia ? `${data.bpSys}/${data.bpDia}` : '-'}</span> mmHg</div>
-                <div style={{ width: '16.666%' }}>PR: <span className="font-normal">{data.pulseRate || '-'}</span> bpm</div>
-                <div style={{ width: '16.666%' }}>RR: <span className="font-normal">{data.respRate || '-'}</span> /min</div>
-                <div style={{ width: '16.666%' }}>Temp: <span className="font-normal">{data.temperature || '-'}</span> °C</div>
-                <div style={{ width: '16.666%' }}>SpO2: <span className="font-normal">{data.spo2 || '-'}</span> %</div>
-                <div style={{ width: '16.666%' }}>Pain: <span className="font-normal">{data.painScore || '-'}</span></div>
+              <div className="p-0.5 border border-slate-300 rounded bg-[#fcfcfc] text-center text-[10.5pt]" style={{ display: 'flex', width: '100%', border: '1px solid #cbd5e1', backgroundColor: '#fcfcfc', textAlign: 'center', fontSize: '10.5pt', padding: '2px 4px', flexWrap: 'wrap', gap: '3px', justifyContent: 'space-between' }}>
+                <div>Temp: <span className="font-normal">{data.temperature || '-'}</span> °C</div>
+                <div>HR: <span className="font-normal">{data.pulseRate || '-'}</span> bpm</div>
+                <div>BP: <span className="font-normal">{data.bpSys && data.bpDia ? `${data.bpSys}/${data.bpDia}` : '-'}</span> mmHg</div>
+                <div>RR: <span className="font-normal">{data.respRate || '-'}</span> /min</div>
+                <div>Wt: <span className="font-normal">{data.weight ? `${data.weight} kg` : '-'}</span></div>
+                <div>Ht: <span className="font-normal">{data.height ? `${data.height} cm` : '-'}</span></div>
+                <div>BMI: <span className="font-bold">{data.bmi || '-'}</span> {data.bmiCategory ? `(${data.bmiCategory})` : ''}</div>
+                <div>SpO2: <span className="font-normal">{data.spo2 || '-'}</span> %</div>
+                <div>Pain: <span className="font-normal">{data.painScore || '-'}</span></div>
               </div>
 
               <div className="grid grid-cols-12 gap-x-2 text-[12pt] pdf-grid-12" style={{ display: 'flex', width: '100%', fontSize: '12pt', marginTop: '2px' }}>

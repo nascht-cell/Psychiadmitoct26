@@ -82,11 +82,15 @@ export interface PsychiatricAssessment {
   safetyPlanOther: string;
 
   // Section F: Physical & Functional Assessment
+  temperature: string;
+  pulseRate: string;
   bpSys: string;
   bpDia: string;
-  pulseRate: string;
   respRate: string;
-  temperature: string;
+  weight: string;
+  height: string;
+  bmi: string;
+  bmiCategory?: string;
   spo2: string;
   painScore: string; // 'No pain' or number 0-10
   generalAppearance: 'Normal' | 'Abnormal' | '';
@@ -245,9 +249,9 @@ export const initialAssessmentData: PsychiatricAssessment = {
   orientationTime: true,
   orientationPlace: true,
   orientationPerson: true,
-  attentionMemory: 'Impaired',
+  attentionMemory: 'Intact',
   insight: '6(True)',
-  judgment: 'Impaired',
+  judgment: 'Intact',
 
   // Section E
   suicideRisk: 'No Risk',
@@ -257,11 +261,15 @@ export const initialAssessmentData: PsychiatricAssessment = {
   safetyPlanOther: '',
 
   // Section F
+  temperature: '36.6',
+  pulseRate: '76',
   bpSys: '120',
   bpDia: '80',
-  pulseRate: '76',
   respRate: '18',
-  temperature: '36.6',
+  weight: '',
+  height: '',
+  bmi: '',
+  bmiCategory: '',
   spo2: '99',
   painScore: 'No pain',
   generalAppearance: 'Normal',
@@ -452,11 +460,15 @@ export const samplePatientData: PsychiatricAssessment = {
   otherRisks: ['Escape'],
   safetyPlan: ['แจ้งญาติดูแล 24 ชม.', 'Admit สังเกตอาการใกล้ชิด'],
 
+  temperature: '36.5',
+  pulseRate: '78',
   bpSys: '128',
   bpDia: '82',
-  pulseRate: '78',
   respRate: '18',
-  temperature: '36.5',
+  weight: '68',
+  height: '170',
+  bmi: '23.5',
+  bmiCategory: 'Healthy Weight',
   spo2: '98',
   painScore: 'No pain',
 

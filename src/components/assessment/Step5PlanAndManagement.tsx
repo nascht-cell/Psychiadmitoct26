@@ -1,5 +1,5 @@
 import React from 'react';
-import { Pill, FileCheck, Check, Sparkles } from 'lucide-react';
+import { Pill, FileCheck, Check, X, Sparkles } from 'lucide-react';
 import { AssessmentStepProps } from './AssessmentStepProps';
 import { DebouncedInput } from './DebouncedInput';
 
@@ -208,6 +208,7 @@ const Step5PlanAndManagementComponent: React.FC<AssessmentStepProps> = ({
                     'นักจิตวิทยาคลินิก',
                     'นักสังคมสงเคราะห์',
                     'อายุรแพทย์',
+                    'นักโภชนบำบัด',
                   ].map(item => {
                     const isSelected = (data.mdtRoles || []).includes(item);
                     return (
@@ -260,26 +261,40 @@ const Step5PlanAndManagementComponent: React.FC<AssessmentStepProps> = ({
             <label className="block text-xs font-bold text-slate-800 uppercase tracking-wider">
               L. Patient & Family Involvement (การมีส่วนร่วม)
             </label>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2.5 text-xs">
               {[
                 { label: 'อธิบายการวินิจฉัยแล้ว', key: 'explainedDiagnosis' },
                 { label: 'อธิบายแผนการรักษา/ทางเลือกแล้ว', key: 'explainedCarePlan' },
                 { label: 'อธิบายผลข้างเคียงยาแล้ว', key: 'explainedSideEffects' },
                 { label: 'แนะนำอาการเตือนที่ต้องรีบมาพบแพทย์', key: 'explainedWarningSigns' },
-              ].map(item => (
-                <label
-                  key={item.key}
-                  className="flex items-center gap-2 p-2.5 rounded-lg border border-slate-200 bg-slate-50/70 hover:bg-slate-100/70 transition-colors cursor-pointer"
-                >
-                  <input
-                    type="checkbox"
-                    checked={(data as any)[item.key]}
-                    onChange={e => onChange({ [item.key]: e.target.checked })}
-                    className="rounded text-blue-600 focus:ring-blue-500"
-                  />
-                  <span>{item.label}</span>
-                </label>
-              ))}
+              ].map(item => {
+                const isDone = !!(data as any)[item.key];
+                return (
+                  <button
+                    key={item.key}
+                    type="button"
+                    onClick={() => onChange({ [item.key]: !isDone })}
+                    className={`w-full min-h-[46px] px-3.5 py-2.5 text-xs rounded-xl border flex items-center justify-between gap-2 transition-all cursor-pointer select-none active:scale-[0.98] shadow-xs text-left ${
+                      isDone
+                        ? 'bg-emerald-600 text-white border-emerald-600 hover:bg-emerald-700 shadow-emerald-700/20'
+                        : 'bg-rose-600 text-white border-rose-600 hover:bg-rose-700 shadow-rose-700/20 ring-2 ring-rose-300'
+                    }`}
+                    title={isDone ? `${item.label} (แตะเพื่อสลับเป็นยังไม่ได้ทำ)` : `${item.label} (แตะเพื่อสลับเป็นเรียบร้อยแล้ว)`}
+                  >
+                    <div className="flex items-center gap-2">
+                      {isDone ? (
+                        <Check className="w-4 h-4 stroke-[3] shrink-0" />
+                      ) : (
+                        <X className="w-4 h-4 stroke-[3] shrink-0" />
+                      )}
+                      <span className="font-extrabold text-xs leading-snug">{item.label}</span>
+                    </div>
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-white/20 shrink-0">
+                      {isDone ? 'เรียบร้อย' : 'ยังไม่ทำ'}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
 
             <div className="flex flex-wrap items-center gap-3 pt-2">
