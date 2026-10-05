@@ -420,7 +420,7 @@ export const samplePatientData: PsychiatricAssessment = {
   duration: '1-4 สัปดาห์',
   onset: 'เฉียบพลัน (Acute)',
   course: 'แย่ลงเรื่อยๆ (Progressive)',
-  precipitatingFactors: ['การเงิน/การงาน', 'ปัญหาครอบครัว/ความสัมพันธ์'],
+  precipitatingFactors: ['ขาดยา / ไม่ได้ทานยาต่อเนื่อง', 'อดนอนสะสม / พักผ่อนไม่พอ'],
   associatedSymptoms: ['นอนไม่หลับ', 'เบื่ออาหาร', 'อ่อนเพลีย'],
   hpiDetails: 'ผู้ป่วยมีอาการซึมเศร้า ท้อแท้ เบื่อหน่าย ไม่อยากทำอะไรมาประมาณ 3 สัปดาห์ รู้สึกหมดพลังในการทำงาน เบื่ออาหาร น้ำหนักลดลง 2 กก. มีความคิดทำร้ายตนเอง มีความเครียดจากงานที่เพิ่มขึ้นและภาระค่าใช้จ่าย',
   previousTreatment: 'ไม่เคยรักษาจิตเวชมาก่อน',
@@ -460,7 +460,7 @@ export const samplePatientData: PsychiatricAssessment = {
   spo2: '98',
   painScore: 'No pain',
 
-  psychosocialStressors: ['ปัญหาการเงิน/หนี้สิน', 'ปัญหาการงาน/การเรียน'],
+  psychosocialStressors: ['ภาระหนี้สิน / วิกฤตทางการเงิน', 'ปัญหาการทำงาน / ตกงาน / ปัญหาในหน่วยทหาร / การเรียน'],
   livingEnvironment: 'ปลอดภัยและเหมาะสม',
 
   standardizedAssessmentStatus: 'ประเมิน',

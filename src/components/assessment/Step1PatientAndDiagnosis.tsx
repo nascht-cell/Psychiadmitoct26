@@ -30,16 +30,16 @@ const Step1PatientAndDiagnosisComponent: React.FC<AssessmentStepProps> = ({
   const [isOtherCustomOpen, setIsOtherCustomOpen] = useState(false);
 
   const effectiveTitle = data.titlePrefix ?? (data.fullName ? parseFullName(data.fullName).titlePrefix : '');
-  const isStandardTitle = ['นาย', 'นาง', 'นางสาว'].includes(effectiveTitle);
+  const isStandardTitle = ['พลฯ', 'นาย', 'นาง', 'นางสาว'].includes(effectiveTitle);
   const isOtherSelected = isOtherCustomOpen || (!isStandardTitle && Boolean(effectiveTitle?.trim()));
 
-  const handleTitlePrefixSelect = (option: 'นาย' | 'นาง' | 'นางสาว' | 'อื่นๆ') => {
+  const handleTitlePrefixSelect = (option: 'พลฯ' | 'นาย' | 'นาง' | 'นางสาว' | 'อื่นๆ') => {
     const currentFirst = data.firstName || (data.fullName ? parseFullName(data.fullName).firstName : '');
     const currentLast = data.lastName || (data.fullName ? parseFullName(data.fullName).lastName : '');
 
     if (option === 'อื่นๆ') {
       setIsOtherCustomOpen(true);
-      if (['นาย', 'นาง', 'นางสาว'].includes(effectiveTitle)) {
+      if (['พลฯ', 'นาย', 'นาง', 'นางสาว'].includes(effectiveTitle)) {
         const fullName = constructFullName(currentFirst, currentLast, '');
         onChange({
           titlePrefix: '',
@@ -60,9 +60,12 @@ const Step1PatientAndDiagnosisComponent: React.FC<AssessmentStepProps> = ({
       fullName,
     };
 
-    // Auto-map gender: นาย -> ชาย, นาง / นางสาว -> หญิง
-    if (option === 'นาย') {
+    // Auto-map gender: พลฯ / นาย -> ชาย, นาง / นางสาว -> หญิง
+    if (option === 'พลฯ' || option === 'นาย') {
       updates.gender = 'ชาย';
+      if (option === 'พลฯ' && !data.occupation) {
+        updates.occupation = 'พลทหาร';
+      }
     } else if (option === 'นาง' || option === 'นางสาว') {
       updates.gender = 'หญิง';
       if (option === 'นาง') {
@@ -535,18 +538,20 @@ const Step1PatientAndDiagnosisComponent: React.FC<AssessmentStepProps> = ({
               </label>
               <div className="flex flex-col gap-1.5">
                 <div className="flex items-center gap-1">
-                  {(['นาย', 'นาง', 'นางสาว', 'อื่นๆ'] as const).map(option => {
+                  {(['พลฯ', 'นาย', 'นางสาว', 'นาง', 'อื่นๆ'] as const).map(option => {
                     const isSelected =
                       option === 'อื่นๆ'
                         ? isOtherSelected
                         : effectiveTitle === option;
                     const activeCls =
-                      option === 'นาย'
+                      option === 'พลฯ'
+                        ? 'bg-emerald-700 text-white border-emerald-700 font-bold shadow-xs ring-1 ring-emerald-400'
+                        : option === 'นาย'
                         ? 'bg-sky-600 text-white border-sky-600 font-bold shadow-xs'
-                        : option === 'นาง'
-                        ? 'bg-teal-600 text-white border-teal-600 font-bold shadow-xs'
                         : option === 'นางสาว'
                         ? 'bg-purple-600 text-white border-purple-600 font-bold shadow-xs'
+                        : option === 'นาง'
+                        ? 'bg-teal-600 text-white border-teal-600 font-bold shadow-xs'
                         : 'bg-slate-700 text-white border-slate-700 font-bold shadow-xs';
 
                     return (
@@ -570,7 +575,7 @@ const Step1PatientAndDiagnosisComponent: React.FC<AssessmentStepProps> = ({
                     type="text"
                     value={isStandardTitle ? '' : effectiveTitle}
                     onChange={e => handleCustomTitleChange(e.target.value)}
-                    placeholder="เช่น พลฯ, ร.ต., ดร., เด็กชาย"
+                    placeholder="เช่น จ.ส.อ., ร.ต., นพ., ดร., เด็กชาย"
                     className="w-48 text-xs bg-white border border-slate-300 rounded-lg px-2.5 py-1 focus:ring-2 focus:ring-blue-600 focus:outline-none"
                     autoFocus
                   />

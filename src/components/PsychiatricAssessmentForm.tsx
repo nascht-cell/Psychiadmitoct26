@@ -86,14 +86,14 @@ const PsychiatricAssessmentFormComponent: React.FC<Props> = ({
 
     // Precipitating Factors mutual exclusion
     if (field === 'precipitatingFactors') {
-      const isNone = item === 'ไม่พบปัจจัยชัดเจน' || item === 'ไม่มี/ไม่ชัดเจน' || item === 'ไม่มี';
+      const isNone = item.includes('ไม่พบ') || item.includes('ไม่มี');
       if (isNone) {
         const updated = current.includes(item) ? [] : [item];
         onChange({ [field]: updated });
         return;
       } else {
         const withoutNone = current.filter(
-          i => i !== 'ไม่พบปัจจัยชัดเจน' && i !== 'ไม่มี/ไม่ชัดเจน' && i !== 'ไม่มี'
+          i => !i.includes('ไม่พบ') && !i.includes('ไม่มี')
         );
         const updated = withoutNone.includes(item)
           ? withoutNone.filter(i => i !== item)
@@ -105,13 +105,13 @@ const PsychiatricAssessmentFormComponent: React.FC<Props> = ({
 
     // Psychosocial Stressors mutual exclusion
     if (field === 'psychosocialStressors') {
-      const isNone = item === 'ไม่มี/ไม่ชัดเจน' || item === 'ไม่มี';
+      const isNone = item.includes('ไม่มี');
       if (isNone) {
         const updated = current.includes(item) ? [] : [item];
         onChange({ [field]: updated });
         return;
       } else {
-        const withoutNone = current.filter(i => i !== 'ไม่มี/ไม่ชัดเจน' && i !== 'ไม่มี');
+        const withoutNone = current.filter(i => !i.includes('ไม่มี'));
         const updated = withoutNone.includes(item)
           ? withoutNone.filter(i => i !== item)
           : [...withoutNone, item];

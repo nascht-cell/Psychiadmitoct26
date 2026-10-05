@@ -379,26 +379,40 @@ const Step2HistoryAndSymptomsComponent: React.FC<AssessmentStepProps> = ({
             </div>
           </div>
 
-          {/* 4. ปัจจัยกระตุ้น (Precipitating factors) */}
+          {/* 4. ปัจจัยกระตุ้นเฉียบพลัน (Precipitating factors) */}
           <div className="pt-3 border-t border-slate-100">
-            <label className="block text-xs font-bold text-slate-800 uppercase tracking-wider mb-2">
-              ปัจจัยกระตุ้น (Precipitating factors) <span className="text-xs font-normal text-slate-500">(เลือกได้มากกว่า 1 ข้อ)</span>
-            </label>
+            <div className="mb-2">
+              <label className="block text-xs font-bold text-slate-800 uppercase tracking-wider">
+                4. ปัจจัยกระตุ้นเฉียบพลัน (Precipitating factors — เหตุการณ์นำก่อนอาการกำเริบครั้งนี้) <span className="text-xs font-normal text-slate-500">(เลือกได้มากกว่า 1 ข้อ)</span>
+              </label>
+              <p className="text-[11px] text-slate-500 mt-0.5">
+                ระบุเหตุการณ์หรือภาวะเฉียบพลันที่กระตุ้นให้อาการกำเริบนำมา รพ. ในครั้งนี้ (สำหรับปัญหาความกดดันเรื้อรัง/การเงิน/ครอบครัว ให้ประเมินในหัวข้อ G จิตสังคม)
+              </p>
+            </div>
             <div className="flex flex-wrap gap-2">
               {[
-                { name: 'ขาดยา', activeCls: 'bg-rose-600 text-white border-rose-600 shadow-xs ring-1 ring-rose-300' },
-                { name: 'ใช้สารเสพติด', activeCls: 'bg-orange-600 text-white border-orange-600 shadow-xs' },
-                { name: 'โรคทางกายกำเริบ', activeCls: 'bg-amber-600 text-white border-amber-600 shadow-xs' },
-                { name: 'ปัญหาครอบครัว/ความสัมพันธ์', activeCls: 'bg-purple-600 text-white border-purple-600 shadow-xs' },
-                { name: 'การเงิน/การงาน', activeCls: 'bg-sky-600 text-white border-sky-600 shadow-xs' },
-                { name: 'ไม่พบปัจจัยชัดเจน', activeCls: 'bg-slate-600 text-white border-slate-600 shadow-xs' },
-              ].map(({ name: item, activeCls }) => {
-                const isSelected = (data.precipitatingFactors || []).includes(item);
+                { name: 'ขาดยา / ไม่ได้ทานยาต่อเนื่อง', aliases: ['ขาดยา'], activeCls: 'bg-rose-600 text-white border-rose-600 shadow-xs ring-1 ring-rose-300' },
+                { name: 'ใช้สารเสพติด / ดื่มสุราหนัก', aliases: ['ใช้สารเสพติด'], activeCls: 'bg-orange-600 text-white border-orange-600 shadow-xs' },
+                { name: 'อดนอนสะสม / พักผ่อนไม่พอ', aliases: ['อดนอน'], activeCls: 'bg-indigo-600 text-white border-indigo-600 shadow-xs' },
+                { name: 'โรคทางกายกำเริบ / เจ็บป่วยเฉียบพลัน', aliases: ['โรคทางกายกำเริบ'], activeCls: 'bg-amber-600 text-white border-amber-600 shadow-xs' },
+                { name: 'มีปากเสียง / ทะเลาะขัดแย้งรุนแรง', aliases: ['ปัญหาครอบครัว/ความสัมพันธ์'], activeCls: 'bg-purple-600 text-white border-purple-600 shadow-xs' },
+                { name: 'เหตุการณ์วิกฤตเฉียบพลัน (Crisis)', aliases: ['การเงิน/การงาน'], activeCls: 'bg-sky-600 text-white border-sky-600 shadow-xs' },
+                { name: 'ไม่พบปัจจัยกระตุ้นเฉียบพลันชัดเจน', aliases: ['ไม่พบปัจจัยชัดเจน', 'ไม่มี/ไม่ชัดเจน', 'ไม่มี'], activeCls: 'bg-slate-600 text-white border-slate-600 shadow-xs' },
+              ].map(({ name: item, aliases, activeCls }) => {
+                const currentList = data.precipitatingFactors || [];
+                const isSelected = currentList.includes(item) || aliases.some(a => currentList.includes(a));
                 return (
                   <button
                     key={item}
                     type="button"
-                    onClick={() => toggleArrayItem('precipitatingFactors', item)}
+                    onClick={() => {
+                      if (isSelected) {
+                        const updated = currentList.filter(f => f !== item && !aliases.includes(f));
+                        onChange({ precipitatingFactors: updated });
+                      } else {
+                        toggleArrayItem('precipitatingFactors', item);
+                      }
+                    }}
                     className={`px-3.5 py-1.5 text-xs font-bold rounded-xl border transition-all flex items-center gap-1.5 cursor-pointer select-none ${
                       isSelected
                         ? activeCls
@@ -414,6 +428,15 @@ const Step2HistoryAndSymptomsComponent: React.FC<AssessmentStepProps> = ({
                   </button>
                 );
               })}
+            </div>
+            <div className="mt-2.5">
+              <DebouncedInput
+                type="text"
+                value={data.precipitatingFactorsOther || ''}
+                onChangeValue={val => onChange({ precipitatingFactorsOther: val })}
+                placeholder="ระบุปัจจัยกระตุ้นเฉียบพลันอื่นๆ เพิ่มเติม (เช่น อกหักฉับพลัน, ถูกให้ออกจากบ้าน, มีเรื่องวิวาท)..."
+                className="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-blue-600 focus:outline-none"
+              />
             </div>
           </div>
 
@@ -1046,26 +1069,40 @@ const Step2HistoryAndSymptomsComponent: React.FC<AssessmentStepProps> = ({
 
         <div className="p-3.5 sm:p-6 space-y-4 sm:space-y-6">
           <div>
-            <label className="block text-xs font-bold text-slate-800 uppercase tracking-wider mb-1.5 sm:mb-2">
-              Psychosocial Stressors (ปัจจัยกระตุ้นความเครียด) <span className="text-xs font-normal text-slate-500">(หากเลือกข้ออื่น ระบบจะยกเลิกข้อ "ไม่มี/ไม่ชัดเจน" ให้อัตโนมัติ)</span>
-            </label>
+            <div className="mb-2">
+              <label className="block text-xs font-bold text-slate-800 uppercase tracking-wider">
+                Psychosocial Stressors (ความกดดันและปัญหาทางจิตสังคมในชีวิตประจำวัน) <span className="text-xs font-normal text-slate-500">(หากเลือกข้ออื่น ระบบจะยกเลิกข้อ "ไม่มีปัญหาความกดดันชัดเจน" ให้อัตโนมัติ)</span>
+              </label>
+              <p className="text-[11px] text-slate-500 mt-0.5">
+                ประเมินปัญหาด้านครอบครัว เศรษฐกิจ การงาน สังคม และสิ่งแวดล้อมที่เป็นความเครียดสะสมของผู้ป่วย (Chronic / Background Life Stressors)
+              </p>
+            </div>
             <div className="flex flex-wrap gap-1.5 sm:gap-2">
               {[
-                'ปัญหาความสัมพันธ์/ครอบครัว',
-                'ปัญหาการเงิน/หนี้สิน',
-                'ปัญหาการงาน/การเรียน',
-                'การเจ็บป่วยทางกายรุนแรง',
-                'การสูญเสีย (Bereavement)',
-                'ปัญหาคดีความ/กฎหมาย',
-                'ขาดผู้ดูแล/ถูกทอดทิ้ง',
-                'ไม่มี/ไม่ชัดเจน',
-              ].map(item => {
-                const isSelected = (data.psychosocialStressors || []).includes(item);
+                { name: 'ปัญหาชีวิตสมรส / ความสัมพันธ์ในครอบครัว', aliases: ['ปัญหาความสัมพันธ์/ครอบครัว', 'ปัญหาครอบครัว/ความสัมพันธ์'] },
+                { name: 'ภาระหนี้สิน / วิกฤตทางการเงิน', aliases: ['ปัญหาการเงิน/หนี้สิน', 'การเงิน/การงาน'] },
+                { name: 'ปัญหาการทำงาน / ตกงาน / ปัญหาในหน่วยทหาร / การเรียน', aliases: ['ปัญหาการงาน/การเรียน'] },
+                { name: 'การเจ็บป่วยทางกายเรื้อรังรุนแรง', aliases: ['การเจ็บป่วยทางกายรุนแรง'] },
+                { name: 'การสูญเสียบุคคลใกล้ชิด (Bereavement / Grief)', aliases: ['การสูญเสีย (Bereavement)'] },
+                { name: 'ปัญหาคดีความ / ข้อพิพาททางกฎหมาย', aliases: ['ปัญหาคดีความ/กฎหมาย'] },
+                { name: 'ขาดผู้ดูแล / โดดเดี่ยว / ถูกทอดทิ้ง', aliases: ['ขาดผู้ดูแล/ถูกทอดทิ้ง'] },
+                { name: 'ปัญหาการปรับตัวในหน่วย / สิ่งแวดล้อมใหม่', aliases: [] },
+                { name: 'ไม่มีปัญหาความกดดันทางจิตสังคมชัดเจน', aliases: ['ไม่มี/ไม่ชัดเจน', 'ไม่มี'] },
+              ].map(({ name: item, aliases }) => {
+                const currentList = data.psychosocialStressors || [];
+                const isSelected = currentList.includes(item) || aliases.some(a => currentList.includes(a));
                 return (
                   <button
                     key={item}
                     type="button"
-                    onClick={() => toggleArrayItem('psychosocialStressors', item)}
+                    onClick={() => {
+                      if (isSelected) {
+                        const updated = currentList.filter(f => f !== item && !aliases.includes(f));
+                        onChange({ psychosocialStressors: updated });
+                      } else {
+                        toggleArrayItem('psychosocialStressors', item);
+                      }
+                    }}
                     className={`px-3 py-1.5 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer select-none ${
                       isSelected ? 'clay-pill-active' : 'clay-pill-inactive'
                     }`}
