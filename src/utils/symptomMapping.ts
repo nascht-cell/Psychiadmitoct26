@@ -217,6 +217,36 @@ export const DIAGNOSTIC_GROUPS: Record<Exclude<DiagnosticGroup, 'all'>, Diagnost
   },
 };
 
+// Precompiled static regular expressions to eliminate RegExp allocation churn in hot loops
+const RE_F2 = /f2[0-9]/i;
+const RE_F30 = /\bf30(?:\.|\b)/i;
+const RE_F1 = /f1[0-9]/i;
+const RE_F0 = /f0[0-9]/i;
+const RE_F4 = /f4[0-8]/i;
+
+// Precalculated immutable symptoms cache for 'all' group (O(1) memory and time lookup)
+const ALL_SYMPTOMS_CACHE: {
+  readonly chiefComplaints: SymptomItem[];
+  readonly associatedSymptoms: SymptomItem[];
+} = (() => {
+  const ccMap = new Map<string, SymptomItem>();
+  const asMap = new Map<string, SymptomItem>();
+
+  Object.values(DIAGNOSTIC_GROUPS).forEach(cfg => {
+    cfg.chiefComplaints.forEach(item => {
+      if (!ccMap.has(item.name)) ccMap.set(item.name, item);
+    });
+    cfg.associatedSymptoms.forEach(item => {
+      if (!asMap.has(item.name)) asMap.set(item.name, item);
+    });
+  });
+
+  return {
+    chiefComplaints: Object.freeze(Array.from(ccMap.values())) as SymptomItem[],
+    associatedSymptoms: Object.freeze(Array.from(asMap.values())) as SymptomItem[],
+  };
+})();
+
 /**
  * Detects the diagnostic group automatically based on Step 1 diagnostic input.
  */
@@ -240,7 +270,7 @@ export function detectDiagnosticGroup(data: PsychiatricAssessment): Exclude<Diag
     fullText.includes('โรคจิต') ||
     fullText.includes('หลงผิด') ||
     fullText.includes('หูแว่ว') ||
-    /f2[0-9]/i.test(fullText);
+    RE_F2.test(fullText);
 
   if (isPsychotic) {
     return 'psychotic';
@@ -255,7 +285,7 @@ export function detectDiagnosticGroup(data: PsychiatricAssessment): Exclude<Diag
     fullText.includes('ไบโพลาร์') ||
     fullText.includes('แมเนีย') ||
     fullText.includes('อารมณ์สองขั้ว') ||
-    /\bf30\b|\bf30\./i.test(fullText);
+    RE_F30.test(fullText);
 
   if (isBipolar) {
     return 'bipolar';
@@ -295,7 +325,7 @@ export function detectDiagnosticGroup(data: PsychiatricAssessment): Exclude<Diag
     fullText.includes('เหล้า') ||
     fullText.includes('แอลกอฮอล์') ||
     fullText.includes('กัญชา') ||
-    /f1[0-9]/i.test(fullText);
+    RE_F1.test(fullText);
 
   if (isSubstance) {
     return 'substance';
@@ -312,7 +342,7 @@ export function detectDiagnosticGroup(data: PsychiatricAssessment): Exclude<Diag
     fullText.includes('สมองเสื่อม') ||
     fullText.includes('เพ้อ') ||
     fullText.includes('สับสน') ||
-    /f0[0-9]/i.test(fullText);
+    RE_F0.test(fullText);
 
   if (isNeurocognitive) {
     return 'neurocognitive';
@@ -334,7 +364,7 @@ export function detectDiagnosticGroup(data: PsychiatricAssessment): Exclude<Diag
     fullText.includes('วิตกกังวล') ||
     fullText.includes('แพนิค') ||
     fullText.includes('ตื่นตระหนก') ||
-    /f4[0-8]/i.test(fullText);
+    RE_F4.test(fullText);
 
   if (isAnxiety) {
     return 'anxiety';
@@ -346,27 +376,16 @@ export function detectDiagnosticGroup(data: PsychiatricAssessment): Exclude<Diag
 
 /**
  * Returns the combined Chief Complaints & Associated Symptoms for a given group or 'all'.
+ * Optimized to O(1) time and memory for 'all' group using precomputed cache.
  */
 export function getSymptomsByGroup(group: DiagnosticGroup): {
   chiefComplaints: SymptomItem[];
   associatedSymptoms: SymptomItem[];
 } {
   if (group === 'all') {
-    const ccMap = new Map<string, SymptomItem>();
-    const asMap = new Map<string, SymptomItem>();
-
-    Object.values(DIAGNOSTIC_GROUPS).forEach(cfg => {
-      cfg.chiefComplaints.forEach(item => {
-        if (!ccMap.has(item.name)) ccMap.set(item.name, item);
-      });
-      cfg.associatedSymptoms.forEach(item => {
-        if (!asMap.has(item.name)) asMap.set(item.name, item);
-      });
-    });
-
-    return {
-      chiefComplaints: Array.from(ccMap.values()),
-      associatedSymptoms: Array.from(asMap.values()),
+    return ALL_SYMPTOMS_CACHE as {
+      chiefComplaints: SymptomItem[];
+      associatedSymptoms: SymptomItem[];
     };
   }
 

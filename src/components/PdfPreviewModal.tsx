@@ -37,6 +37,11 @@ export const PdfPreviewModal: React.FC<Props> = ({ isOpen, onClose, data }) => {
       if (success) {
         setDownloadSuccess(true);
         setTimeout(() => setDownloadSuccess(false), 3500);
+
+        // Always auto-print immediately after PDF generation for all users
+        setTimeout(() => {
+          window.print();
+        }, 400);
       }
     } catch (err) {
       console.error('Error generating PDF download:', err);
@@ -55,7 +60,7 @@ export const PdfPreviewModal: React.FC<Props> = ({ isOpen, onClose, data }) => {
       aria-modal="true"
       aria-label="ตัวอย่างเอกสาร A4"
     >
-      <div className="bg-slate-900 rounded-2xl shadow-2xl w-full max-w-5xl h-[95vh] flex flex-col overflow-hidden border border-slate-700">
+      <div className="bg-slate-900 rounded-2xl shadow-2xl w-full max-w-5xl h-[92vh] sm:h-[95vh] max-h-[92dvh] sm:max-h-[95dvh] flex flex-col overflow-hidden border border-slate-700">
         {/* Streamlined Clean Header Bar */}
         <div className="px-4 sm:px-6 py-3 bg-slate-900 text-white flex items-center justify-between border-b border-slate-800 shrink-0 gap-3">
           <div className="flex items-center gap-2.5 min-w-0">
@@ -133,8 +138,11 @@ export const PdfPreviewModal: React.FC<Props> = ({ isOpen, onClose, data }) => {
           </div>
         </div>
 
-        {/* Scrollable Document Preview Area (Maximized viewport for iPad & Desktop) */}
-        <div className="flex-1 overflow-y-auto p-4 sm:p-8 bg-slate-800/90 flex flex-col items-center select-none">
+        {/* Scrollable Document Preview Area (Maximized viewport for iPad, iPhone & Desktop) */}
+        <div
+          className="flex-1 overflow-y-auto overflow-x-auto p-2 sm:p-6 md:p-8 bg-slate-800/90 flex flex-col items-center select-none"
+          style={{ WebkitOverflowScrolling: 'touch' }}
+        >
           <AssessmentPdfDocument id="preview-modal-pdf-document" data={data} showPageBadges={true} />
         </div>
       </div>

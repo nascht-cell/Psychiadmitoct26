@@ -18,6 +18,7 @@ import {
   History,
   RefreshCw,
   Check,
+  Settings,
 } from 'lucide-react';
 import { PsychiatricAssessment, initialAssessmentData, samplePatientData, parseFullName } from './types/assessment';
 import { PsychiatricAssessmentForm } from './components/PsychiatricAssessmentForm';
@@ -29,6 +30,8 @@ import {
   clearFormDraft,
   loadLocalHistory,
   saveToLocalHistory,
+  loadClinicianSettings,
+  saveClinicianSettings,
 } from './utils/storage';
 
 // Code-split heavy modals and printable components for ultra-fast initial page load
@@ -40,6 +43,9 @@ const AssessmentPdfDocument = React.lazy(() =>
 );
 const LocalHistoryModal = React.lazy(() =>
   import('./components/LocalHistoryModal').then(m => ({ default: m.LocalHistoryModal }))
+);
+const ClinicianSettingsModal = React.lazy(() =>
+  import('./components/ClinicianSettingsModal').then(m => ({ default: m.ClinicianSettingsModal }))
 );
 
 const REQUIRED_FIELDS = [
@@ -61,6 +67,7 @@ export default function App() {
   const [historyCount, setHistoryCount] = useState<number>(0);
   const [isSavingAndExporting, setIsSavingAndExporting] = useState(false);
   const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
+  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState<{
     type: 'success' | 'error' | 'info';
     title: string;
@@ -85,6 +92,20 @@ export default function App() {
     // Clear old uncommitted draft from persistent storage so previous unsaved sessions don't linger
     localStorage.removeItem('ha_form_current_draft');
     updateHistoryCount();
+
+    // Load clinician preferences (autoPrintAfterSave, default 4-page, physician defaults)
+    try {
+      const clinicianPrefs = loadClinicianSettings();
+      setFormData(prev => ({
+        ...prev,
+        autoPrintAfterSave: clinicianPrefs.autoPrintAfterSave,
+        allowPage4: prev.allowPage4 !== undefined ? prev.allowPage4 : Boolean(clinicianPrefs.defaultAllowPage4),
+        physicianName: prev.physicianName || clinicianPrefs.defaultPhysicianName || '',
+        licenseNumber: prev.licenseNumber || clinicianPrefs.defaultLicenseNumber || '',
+      }));
+    } catch (e) {
+      console.warn('Error loading clinician settings on mount:', e);
+    }
   }, [updateHistoryCount]);
 
   // Periodic debounced in-session draft effect (tab memory only, never persistent disk/server)
@@ -128,6 +149,7 @@ export default function App() {
   // Security inactivity protection: safe session save without destroying active work abruptly
   useEffect(() => {
     let timeoutId: NodeJS.Timeout;
+    let lastResetTime = Date.now();
 
     const resetTimer = () => {
       if (timeoutId) clearTimeout(timeoutId);
@@ -148,7 +170,14 @@ export default function App() {
 
     const events = ['mousemove', 'keydown', 'mousedown', 'scroll', 'touchstart'];
     const opts = { passive: true };
-    const handleEvent = () => resetTimer();
+    // Throttle activity resets to at most once every 30s to eliminate high-frequency timer allocations
+    const handleEvent = () => {
+      const now = Date.now();
+      if (now - lastResetTime > 30000) {
+        lastResetTime = now;
+        resetTimer();
+      }
+    };
     
     events.forEach(evt => window.addEventListener(evt, handleEvent, opts));
     resetTimer();
@@ -355,8 +384,13 @@ export default function App() {
       showToast(
         'success',
         'บันทึกและดาวน์โหลด PDF สำเร็จแล้ว',
-        `ดาวน์โหลดไฟล์ PDF ขนาด A4 ฟอนต์ TH Sarabun PSK 16pt และจัดเก็บประวัติลงในเครื่องนี้เรียบร้อย (100% Client-Side Privacy)`
+        'ดาวน์โหลดไฟล์ PDF ขนาด A4 เรียบร้อย และเปิดหน้าต่างสั่งพิมพ์อัตโนมัติ (Auto-print)'
       );
+
+      // Always auto-print immediately after PDF generation for all users
+      setTimeout(() => {
+        window.print();
+      }, 400);
     } catch (e) {
       console.error(e);
       showToast(
@@ -515,6 +549,18 @@ export default function App() {
               )}
             </button>
 
+            {/* การตั้งค่าระบบ & Auto-print */}
+            {/* การตั้งค่าระบบ */}
+            <button
+              type="button"
+              onClick={() => setIsSettingsModalOpen(true)}
+              className="clay-btn clay-btn-secondary p-1.5 sm:px-3 sm:py-2 text-xs font-bold text-slate-700 transition-all flex items-center gap-1 sm:gap-1.5"
+              title="ตั้งค่าระบบ: การจัดหน้า A4 และข้อมูลแพทย์ประจำเครื่อง"
+            >
+              <Settings className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-600 shrink-0" />
+              <span className="hidden sm:inline">ตั้งค่า</span>
+            </button>
+
             {/* ล้างฟอร์มใหม่ */}
             <button
               type="button"
@@ -581,7 +627,10 @@ export default function App() {
         </div>
 
         {/* Sticky Compact Action Footer (Claymorphic Pill Toolbar) */}
-        <div className="sticky bottom-2 sm:bottom-4 z-30 max-w-4xl mx-auto no-print px-1 sm:px-2">
+        <div
+          className="sticky bottom-2 sm:bottom-4 z-30 max-w-4xl mx-auto no-print px-1 sm:px-2"
+          style={{ paddingBottom: 'max(0.25rem, env(safe-area-inset-bottom, 0px))' }}
+        >
           <div className="bg-slate-900/95 backdrop-blur-md text-white rounded-2xl sm:rounded-3xl shadow-2xl px-2.5 py-2 sm:px-5 sm:py-3 flex items-center justify-between gap-1.5 sm:gap-4 border border-slate-700/80">
             {/* Status info - condensed on mobile */}
             <div className="flex items-center gap-1.5 sm:gap-3 text-xs min-w-0">
@@ -737,6 +786,15 @@ export default function App() {
             }}
             onLoadRecord={handleLoadRecord}
             currentData={formData}
+          />
+        )}
+        {isSettingsModalOpen && (
+          <ClinicianSettingsModal
+            isOpen={isSettingsModalOpen}
+            onClose={() => setIsSettingsModalOpen(false)}
+            data={formData}
+            onChange={handleFormChange}
+            onShowToast={showToast}
           />
         )}
       </Suspense>

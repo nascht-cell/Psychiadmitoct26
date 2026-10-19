@@ -6,14 +6,27 @@
 
 const SESSION_KEY_NAME = 'ha_clinical_session_entropy';
 
-// Helper to convert Uint8Array to base64 safely without "Maximum call stack size exceeded" on legacy V8
+const textEncoder = typeof TextEncoder !== 'undefined' ? new TextEncoder() : (null as any);
+const textDecoder = typeof TextDecoder !== 'undefined' ? new TextDecoder() : (null as any);
+
+const SUBTLE_CRYPTO_SUPPORTED = Boolean(
+  typeof window !== 'undefined' &&
+  window.crypto &&
+  window.crypto.subtle &&
+  typeof window.crypto.subtle.importKey === 'function' &&
+  typeof window.crypto.subtle.encrypt === 'function' &&
+  typeof window.crypto.subtle.decrypt === 'function'
+);
+
+// High-speed Base64 encoder for Uint8Array without Array.from heap churn
 const uint8ToBase64 = (bytes: Uint8Array): string => {
-  let binary = '';
   const len = bytes.byteLength;
-  const chunkSize = 8192;
-  for (let i = 0; i < len; i += chunkSize) {
-    const chunk = bytes.subarray(i, i + chunkSize);
-    binary += String.fromCharCode.apply(null, Array.from(chunk));
+  const CHUNK_SIZE = 4096;
+  let binary = '';
+  for (let i = 0; i < len; i += CHUNK_SIZE) {
+    const chunk = bytes.subarray(i, Math.min(i + CHUNK_SIZE, len));
+    // Directly apply subarray without Array.from heap allocation
+    binary += String.fromCharCode.apply(null, chunk as unknown as number[]);
   }
   return btoa(binary);
 };
@@ -39,7 +52,7 @@ const getOrCreateSessionEntropy = (): string => {
         window.crypto.getRandomValues(buffer);
       } else {
         for (let i = 0; i < 32; i++) {
-          buffer[i] = Math.floor(Math.random() * 256);
+          buffer[i] = (Math.random() * 256) | 0;
         }
       }
       entropy = uint8ToBase64(buffer);
@@ -54,7 +67,7 @@ const getOrCreateSessionEntropy = (): string => {
         window.crypto.getRandomValues(buffer);
       } else {
         for (let i = 0; i < 32; i++) {
-          buffer[i] = Math.floor(Math.random() * 256);
+          buffer[i] = (Math.random() * 256) | 0;
         }
       }
       (window as any).__clinical_entropy_fallback = uint8ToBase64(buffer);
@@ -65,23 +78,21 @@ const getOrCreateSessionEntropy = (): string => {
 
 let cachedCryptoKey: CryptoKey | null = null;
 
-const isSubtleCryptoSupported = (): boolean => {
-  return Boolean(
-    window.crypto &&
-    window.crypto.subtle &&
-    typeof window.crypto.subtle.importKey === 'function' &&
-    typeof window.crypto.subtle.encrypt === 'function' &&
-    typeof window.crypto.subtle.decrypt === 'function'
-  );
-};
+const isSubtleCryptoSupported = (): boolean => SUBTLE_CRYPTO_SUPPORTED;
 
-// Simple obfuscation cipher fallback for non-secure HTTP origins (e.g. Hospital LAN http://192.168.x.x)
+// High-performance linear XOR cipher avoiding quadratic string re-allocations
 const fallbackCipher = (str: string, keyStr: string): string => {
+  const len = str.length;
+  const keyLen = keyStr.length;
+  const codeUnits = new Uint16Array(len);
+  for (let i = 0; i < len; i++) {
+    codeUnits[i] = str.charCodeAt(i) ^ keyStr.charCodeAt(i % keyLen);
+  }
+  const CHUNK_SIZE = 4096;
   let result = '';
-  for (let i = 0; i < str.length; i++) {
-    const charCode = str.charCodeAt(i);
-    const keyChar = keyStr.charCodeAt(i % keyStr.length);
-    result += String.fromCharCode(charCode ^ keyChar);
+  for (let i = 0; i < len; i += CHUNK_SIZE) {
+    const chunk = codeUnits.subarray(i, Math.min(i + CHUNK_SIZE, len));
+    result += String.fromCharCode.apply(null, chunk as unknown as number[]);
   }
   return result;
 };
@@ -109,8 +120,7 @@ const getCryptoKey = async (): Promise<CryptoKey> => {
  */
 export const encryptAtRest = async (plaintext: string): Promise<string> => {
   try {
-    if (!isSubtleCryptoSupported()) {
-      // Fallback for HTTP non-secure origins / older legacy browsers without SubtleCrypto
+    if (!SUBTLE_CRYPTO_SUPPORTED) {
       const entropy = getOrCreateSessionEntropy();
       const obfuscated = fallbackCipher(plaintext, entropy);
       return 'FALLBACK_OBF:' + btoa(encodeURIComponent(obfuscated));
@@ -119,7 +129,7 @@ export const encryptAtRest = async (plaintext: string): Promise<string> => {
     const key = await getCryptoKey();
     const iv = new Uint8Array(12);
     window.crypto.getRandomValues(iv);
-    const encodedPlaintext = new TextEncoder().encode(plaintext);
+    const encodedPlaintext = textEncoder.encode(plaintext);
 
     const ciphertextBuffer = await window.crypto.subtle.encrypt(
       {
@@ -155,7 +165,7 @@ export const decryptAtRest = async (encryptedBase64: string): Promise<string> =>
       return fallbackCipher(obfuscated, entropy);
     }
 
-    if (!isSubtleCryptoSupported()) {
+    if (!SUBTLE_CRYPTO_SUPPORTED) {
       throw new Error('Web Crypto Subtle is unavailable on this HTTP context');
     }
 
@@ -166,19 +176,19 @@ export const decryptAtRest = async (encryptedBase64: string): Promise<string> =>
       throw new Error('Invalid encrypted draft payload length');
     }
 
-    const iv = combined.slice(0, 12);
-    const ciphertext = combined.slice(12);
+    const iv = combined.subarray(0, 12);
+    const ciphertext = combined.subarray(12);
 
     const decryptedBuffer = await window.crypto.subtle.decrypt(
       {
         name: 'AES-GCM',
-        iv: iv,
+        iv: iv as BufferSource,
       },
       key,
-      ciphertext
+      ciphertext as BufferSource
     );
 
-    return new TextDecoder().decode(decryptedBuffer);
+    return textDecoder.decode(decryptedBuffer);
   } catch (error) {
     console.error('Decryption at rest failed:', error);
     throw new Error('Failed to decrypt clinical draft data');

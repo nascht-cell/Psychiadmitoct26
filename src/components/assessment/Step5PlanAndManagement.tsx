@@ -1,7 +1,8 @@
 import React from 'react';
-import { Pill, FileCheck, Check, X, Sparkles } from 'lucide-react';
+import { Pill, FileCheck, Check, X, Printer, Sliders } from 'lucide-react';
 import { AssessmentStepProps } from './AssessmentStepProps';
 import { DebouncedInput } from './DebouncedInput';
+import { saveClinicianSettings } from '../../utils/storage';
 
 const Step5PlanAndManagementComponent: React.FC<AssessmentStepProps> = ({
   data,
@@ -84,51 +85,6 @@ const Step5PlanAndManagementComponent: React.FC<AssessmentStepProps> = ({
                       </button>
                     );
                   })}
-                </div>
-                <div className="space-y-1.5">
-                  <div className="flex items-center justify-between">
-                    <label className="block text-xs font-medium text-slate-700">
-                      ระบุชื่อยา / Dose คร่าวๆ:
-                    </label>
-                  </div>
-
-                  {/* Quick Medication Chips */}
-                  <div className="flex flex-wrap gap-1 mb-1.5">
-                    <span className="text-[11px] font-bold text-slate-500 w-full flex items-center gap-1">
-                      <Sparkles className="w-3 h-3 text-amber-500" />
-                      คลิกเพื่อแทรกสูตรยาพบบ่อย:
-                    </span>
-                    {[
-                      'Sertraline (50) 1 tab po pc morning',
-                      'Fluoxetine (20) 1 tab po pc morning',
-                      'Risperidone (2) 1 tab po hs',
-                      'Quetiapine (25) 1 tab po hs',
-                      'Lorazepam (0.5) 1 tab po hs prn',
-                      'Haloperidol (5) 1 amp IM stat',
-                    ].map(med => (
-                      <button
-                        key={med}
-                        type="button"
-                        onClick={() => {
-                          const current = data.medicationDetails || '';
-                          const updated = current ? `${current}, ${med}` : med;
-                          onChange({ medicationDetails: updated });
-                        }}
-                        className="text-[10px] font-mono bg-white hover:bg-slate-100 text-slate-800 border border-slate-300 px-2 py-0.5 rounded transition-all cursor-pointer"
-                      >
-                        + {med}
-                      </button>
-                    ))}
-                  </div>
-
-                  <textarea
-                    rows={2}
-                    value={data.medicationDetails}
-                    onChange={e => onChange({ medicationDetails: e.target.value })}
-                    onBlur={e => onBlurField && onBlurField('medicationDetails', e.target.value)}
-                    placeholder="เช่น Sertraline (50) 1 tab po pc morning, Lorazepam (0.5) 1 tab po hs prn..."
-                    className="w-full text-xs font-mono bg-white border border-slate-300 rounded-lg p-2.5 focus:outline-none focus:ring-2 focus:ring-blue-600"
-                  />
                 </div>
               </div>
             )}
@@ -373,26 +329,30 @@ const Step5PlanAndManagementComponent: React.FC<AssessmentStepProps> = ({
               </div>
             </div>
 
-            {/* PDF Layout Options */}
-            <div className="p-5 bg-blue-50/50 border border-blue-200/80 rounded-xl space-y-3 mt-4">
-              <div className="text-xs font-bold uppercase tracking-wider text-blue-800 flex items-center gap-1.5">
-                <span>การตั้งค่าการพิมพ์รายงาน (Print Layout Settings)</span>
-              </div>
-              <div className="flex items-start gap-3">
+            {/* Document Layout Option - Auto-print is standard default for all users */}
+            <div className="flex items-center justify-between p-3 sm:px-3.5 bg-slate-50 border border-slate-200/90 rounded-xl mt-3 text-xs">
+              <label
+                htmlFor="toggle-allowPage4"
+                className="flex items-center gap-2.5 cursor-pointer select-none text-slate-700 hover:text-slate-900 transition-colors"
+              >
                 <input
                   id="toggle-allowPage4"
                   type="checkbox"
                   checked={Boolean(data.allowPage4)}
-                  onChange={e => onChange({ allowPage4: e.target.checked })}
-                  className="w-4.5 h-4.5 text-blue-600 border-slate-300 rounded focus:ring-blue-500 mt-0.5 cursor-pointer"
+                  onChange={e => {
+                    const checked = e.target.checked;
+                    onChange({ allowPage4: checked });
+                    saveClinicianSettings({ defaultAllowPage4: checked });
+                  }}
+                  className="w-4 h-4 text-blue-600 border-slate-300 rounded focus:ring-blue-500 cursor-pointer shrink-0"
                 />
-                <label htmlFor="toggle-allowPage4" className="text-sm text-slate-850 leading-snug cursor-pointer select-none">
-                  <div className="font-semibold text-slate-900">แยกเอกสารออกเป็น 4 หน้า (สำหรับเคสที่มีประวัติหรือคำสั่งยายาวมาก)</div>
-                  <div className="text-xs text-slate-600 mt-0.5">
-                    <strong className="text-blue-700">มาตรฐาน:</strong> โดยปกติเอกสารจะจัดอยู่ใน <strong className="text-slate-900">3 หน้า A4 อย่างลงตัวและพอดี</strong> หากไม่ได้ติ๊กเลือกตัวเลือกนี้ เอกสารจะพิมพ์เป็น 3 หน้าเสมอ (ติ๊กเลือกเฉพาะเมื่อพิมพ์แล้วเนื้อหาในหน้า 3 แน่นเกินไป)
-                  </div>
-                </label>
-              </div>
+                <span className="font-semibold text-slate-800">
+                  ขยายเอกสารเป็น 4 หน้า A4 (สำหรับเคสที่มีประวัติหรือคำสั่งยายาวเป็นพิเศษ)
+                </span>
+              </label>
+              <span className="text-[11px] text-emerald-700 font-medium bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-md hidden sm:inline">
+                ✓ ระบบจะสั่งพิมพ์อัตโนมัติ (Auto-Print)
+              </span>
             </div>
 
             {/* Doctor Signature & Identification */}

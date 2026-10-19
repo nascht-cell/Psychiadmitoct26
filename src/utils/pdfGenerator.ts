@@ -6,17 +6,22 @@ export interface PatientFooterData {
   an?: string;
 }
 
+// Reusable offscreen canvas for patient footer rendering to avoid DOM allocations
+let sharedFooterCanvas: HTMLCanvasElement | null = null;
+
 const renderFooterToDataUrl = (
   patient: PatientFooterData,
   pageNumber: number,
   totalPages: number
 ): string => {
-  const canvas = document.createElement('canvas');
-  // High-res canvas: 180mm @ 2x screen scale ~ 1360px
+  if (!sharedFooterCanvas) {
+    sharedFooterCanvas = document.createElement('canvas');
+    sharedFooterCanvas.width = 1360;
+    sharedFooterCanvas.height = 56;
+  }
+  const canvas = sharedFooterCanvas;
   const width = 1360;
   const height = 56;
-  canvas.width = width;
-  canvas.height = height;
 
   const ctx = canvas.getContext('2d');
   if (!ctx) return '';
@@ -87,6 +92,44 @@ const savePdfFile = (pdf: any, filename: string): void => {
     }
   }
 };
+
+// Snapshot stylesheets once per export rather than repeating expensive O(S*R) loops for every page sheet
+const getCachedStylesheetText = (() => {
+  let cachedText: string | null = null;
+  let cacheTimestamp = 0;
+
+  return (): string => {
+    const now = Date.now();
+    if (cachedText !== null && now - cacheTimestamp < 15000) {
+      return cachedText;
+    }
+
+    const chunks: string[] = [];
+    const styleTags = document.querySelectorAll('style');
+    for (let i = 0; i < styleTags.length; i++) {
+      chunks.push(styleTags[i].textContent || '');
+    }
+
+    const sheets = document.styleSheets;
+    for (let s = 0; s < sheets.length; s++) {
+      try {
+        const sheetObj = sheets[s];
+        const rules = sheetObj.cssRules;
+        if (rules && rules.length > 0) {
+          for (let r = 0; r < rules.length; r++) {
+            chunks.push(rules[r].cssText);
+          }
+        }
+      } catch (_) {
+        // Cross-origin stylesheet access restriction ignored safely
+      }
+    }
+
+    cachedText = chunks.join('\n');
+    cacheTimestamp = now;
+    return cachedText;
+  };
+})();
 
 export const exportElementToA4Pdf = async (
   elementIdOrElement: string | HTMLElement,
@@ -195,32 +238,10 @@ export const exportElementToA4Pdf = async (
             try {
               const head = clonedDoc.head || clonedDoc.getElementsByTagName('head')[0];
               if (head) {
-                // Copy existing styles
-                const styleTags = document.querySelectorAll('style');
-                styleTags.forEach(st => {
-                  try {
-                    const newStyle = clonedDoc.createElement('style');
-                    newStyle.textContent = st.textContent;
-                    head.appendChild(newStyle);
-                  } catch (_) {}
-                });
-
-                for (let s = 0; s < document.styleSheets.length; s++) {
-                  try {
-                    const sheetObj = document.styleSheets[s];
-                    if (sheetObj.cssRules && sheetObj.cssRules.length > 0) {
-                      const sheetStyle = clonedDoc.createElement('style');
-                      let rulesText = '';
-                      for (let r = 0; r < sheetObj.cssRules.length; r++) {
-                        rulesText += sheetObj.cssRules[r].cssText + '\n';
-                      }
-                      sheetStyle.textContent = rulesText;
-                      head.appendChild(sheetStyle);
-                    }
-                  } catch (_) {
-                    // Ignore cross-origin stylesheet errors
-                  }
-                }
+                // Copy existing styles in a single efficient element
+                const masterStyle = clonedDoc.createElement('style');
+                masterStyle.textContent = getCachedStylesheetText();
+                head.appendChild(masterStyle);
 
                 // Authoritative print override stylesheet
                 const pdfOverrideStyle = clonedDoc.createElement('style');
@@ -288,11 +309,15 @@ export const exportElementToA4Pdf = async (
           }
         }
 
-        const imgData = canvas.toDataURL('image/jpeg', 0.98);
         if (i > 0) {
           pdf.addPage();
         }
-        pdf.addImage(imgData, 'JPEG', 0, 0, 210, 297, undefined, 'FAST');
+        // Direct canvas injection avoids allocating 4-10MB base64 strings in V8 heap
+        pdf.addImage(canvas, 'JPEG', 0, 0, 210, 297, undefined, 'FAST');
+
+        // Immediately release GPU backing store memory for this page
+        canvas.width = 0;
+        canvas.height = 0;
       }
 
       savePdfFile(pdf, fileName);
@@ -327,19 +352,21 @@ export const exportElementToA4Pdf = async (
     const pdf = new jsPDF('p', 'mm', 'a4');
     let position = 0;
 
-    const imgData = canvas.toDataURL('image/jpeg', 0.98);
-
-    // Add first page
-    pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight, undefined, 'FAST');
+    // Add first page directly from canvas
+    pdf.addImage(canvas, 'JPEG', 0, position, imgWidth, imgHeight, undefined, 'FAST');
     heightLeft -= pageHeight;
 
     // Add additional pages if needed
     while (heightLeft > 0) {
       position = heightLeft - imgHeight;
       pdf.addPage();
-      pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight, undefined, 'FAST');
+      pdf.addImage(canvas, 'JPEG', 0, position, imgWidth, imgHeight, undefined, 'FAST');
       heightLeft -= pageHeight;
     }
+
+    // Immediately release high-res GPU backing store buffer
+    canvas.width = 0;
+    canvas.height = 0;
 
     // If final A4 PDF has multiple pages, starting from page 2 until the last page,
     // inject a 1-line footer with patient identifiers to prevent document mix-ups if dropped

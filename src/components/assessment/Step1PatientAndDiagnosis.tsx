@@ -16,7 +16,9 @@ import {
 import { AssessmentStepProps } from './AssessmentStepProps';
 import { parseFullName, constructFullName, PsychiatricAssessment } from '../../types/assessment';
 import { DebouncedInput } from './DebouncedInput';
-import { saveToLocalHistory } from '../../utils/storage';
+import { getF1x5FromPrimaryDiagnosis, appendOrUpdateF1x5Comorbid } from '../../utils/diagnosisHelper';
+import { Icd10AiSuggester } from './Icd10AiSuggester';
+import { Icd10Suggestion } from '../../utils/icd10SuggestHelper';
 
 const Step1PatientAndDiagnosisComponent: React.FC<AssessmentStepProps> = ({
   data,
@@ -136,6 +138,22 @@ const Step1PatientAndDiagnosisComponent: React.FC<AssessmentStepProps> = ({
     if (e.target) {
       e.target.value = '';
     }
+  };
+
+  const handleApplyAiDiagnosis = (sug: Icd10Suggestion) => {
+    const newCategories = new Set(data.diagnosticCategory || []);
+    if (sug.category) newCategories.add(sug.category);
+
+    let updatedComorbid = data.comorbidDiagnosis;
+    if (sug.suggestedComorbid) {
+      updatedComorbid = appendOrUpdateF1x5Comorbid(data.comorbidDiagnosis, sug.suggestedComorbid);
+    }
+
+    onChange({
+      primaryDiagnosis: sug.formatted,
+      diagnosticCategory: Array.from(newCategories),
+      comorbidDiagnosis: updatedComorbid,
+    });
   };
 
   return (
@@ -264,7 +282,7 @@ const Step1PatientAndDiagnosisComponent: React.FC<AssessmentStepProps> = ({
                   primaryDiagnosis: 'Major Depressive Episode, Severe without Psychotic Features (F32.2)',
                   pharmPlan: 'ปรับ/เริ่มยาใหม่',
                   medicationGroups: ['Antidepressants', 'Anxiolytics/Sedatives'],
-                  medicationDetails: 'Sertraline (100) 1 tab po pc morning, Lorazepam (1) 1 tab po hs',
+                  medicationDetails: '',
                   generalAppearance: 'Normal',
                   heent: 'Normal',
                   cvsRs: 'Normal',
@@ -310,7 +328,7 @@ const Step1PatientAndDiagnosisComponent: React.FC<AssessmentStepProps> = ({
                   primaryDiagnosis: 'Schizophrenia, Paranoid type (F20.0)',
                   pharmPlan: 'ปรับ/เริ่มยาใหม่',
                   medicationGroups: ['Antipsychotics'],
-                  medicationDetails: 'Risperidone (2) 1 tab po hs',
+                  medicationDetails: '',
                   generalAppearance: 'Normal',
                   heent: 'Normal',
                   cvsRs: 'Normal',
@@ -354,7 +372,7 @@ const Step1PatientAndDiagnosisComponent: React.FC<AssessmentStepProps> = ({
                   primaryDiagnosis: 'Bipolar I Disorder, Current episode manic (F31.1)',
                   pharmPlan: 'ปรับ/เริ่มยาใหม่',
                   medicationGroups: ['Mood Stabilizers', 'Antipsychotics'],
-                  medicationDetails: 'Sodium Valproate (500) 1 tab po bid, Olanzapine (10) 1 tab po hs',
+                  medicationDetails: '',
                   generalAppearance: 'Normal',
                   heent: 'Normal',
                   cvsRs: 'Normal',
@@ -386,7 +404,7 @@ const Step1PatientAndDiagnosisComponent: React.FC<AssessmentStepProps> = ({
               A. Patient Identification (ข้อมูลทั่วไปและผู้ให้ประวัติ)
             </h3>
           </div>
-          <span className="text-xs text-slate-500 font-medium hidden sm:inline">ข้อมูลระบุตัวตนและข้อมูลพื้นฐาน</span>
+          <span className="text-xs text-slate-500 font-normal hidden sm:inline">ข้อมูลทั่วไปผู้ป่วย</span>
         </div>
 
         <div className="p-3.5 sm:p-6 space-y-4">
@@ -843,7 +861,7 @@ const Step1PatientAndDiagnosisComponent: React.FC<AssessmentStepProps> = ({
               J. Diagnosis & Comorbidities (การวินิจฉัยโรคและโรคร่วม)
             </h3>
           </div>
-          <span className="text-xs text-blue-100 font-semibold hidden sm:inline">กำหนดการวินิจฉัยตั้งต้นการรับไว้รักษา</span>
+          <span className="text-xs text-blue-200/90 font-medium hidden sm:inline">การวินิจฉัยและการรับไว้รักษา</span>
         </div>
 
         <div className="p-3.5 sm:p-6 space-y-4">
@@ -851,8 +869,8 @@ const Step1PatientAndDiagnosisComponent: React.FC<AssessmentStepProps> = ({
           <div>
             <label className="block text-xs font-bold text-slate-800 uppercase tracking-wider mb-2 flex items-center justify-between">
               <span>กลุ่มโรคหลัก (Diagnostic Category)</span>
-              <span className="text-[11px] text-blue-600 font-semibold normal-case">
-                ✨ เลือกระบบจะนำไปสร้าง Bubbles อาการในขั้นตอนที่ 2 อัตโนมัติ
+              <span className="text-[11px] text-slate-500 font-normal normal-case">
+                เชื่อมโยงหมวดอาการอัตโนมัติ
               </span>
             </label>
             <div className="flex flex-wrap gap-2">
@@ -917,95 +935,231 @@ const Step1PatientAndDiagnosisComponent: React.FC<AssessmentStepProps> = ({
 
             {/* Quick Diagnosis Chips */}
             <div className="mb-2 flex flex-wrap gap-1">
-              <span className="text-[11px] font-bold text-slate-500 w-full flex items-center gap-1">
-                <Sparkles className="w-3 h-3 text-amber-500" />
-                คลิกเพื่อเลือก ICD-10 ด่วน (ระบุโรคพร้อมผูกกลุ่มอาการอัตโนมัติ):
-              </span>
-              {[
-                {
-                  label: '🧠 Schizophrenia (จิตเภท)',
-                  value: 'Schizophrenia, Paranoid type (F20.0)',
-                  category: 'F20-F29 Schizophrenia/Psychotic',
-                  isSevere: false,
-                },
-                {
-                  label: '🚨 Severe MDD (ซึมเศร้ารุนแรง)',
-                  value: 'Major Depressive Episode, Severe without Psychotic Features (F32.2)',
-                  category: 'F30-F39 Mood d/o',
-                  isSevere: true,
-                },
-                {
-                  label: '⚡ Bipolar I, Manic (ไบโพลาร์)',
-                  value: 'Bipolar I Disorder, Current episode manic (F31.1)',
-                  category: 'F30-F39 Mood d/o',
-                  isSevere: false,
-                },
-                {
-                  label: '😰 GAD (วิตกกังวลทั่วไป)',
-                  value: 'Generalized Anxiety Disorder (F41.1)',
-                  category: 'F40-F48 Anxiety/Somatoform',
-                  isSevere: false,
-                },
-                {
-                  label: '🌧️ Adjustment d/o (การปรับตัวผิดปกติ)',
-                  value: 'Adjustment Disorder with depressed mood (F43.21)',
-                  category: 'F40-F48 Anxiety/Somatoform',
-                  isSevere: false,
-                },
-                {
-                  label: '🧪 Stimulant psychosis (โรคจิตจากสาร)',
-                  value: 'Other stimulants including caffeine, Psychotic disorder, Schizophrenia-like (F15.50)',
-                  category: 'F10-F19 Substance-related',
-                  comorbid: 'Stimulant dependence (F15.2)',
-                  isSevere: false,
-                },
-              ].map(dx => (
-                <button
-                  key={dx.value}
-                  type="button"
-                  onClick={() => {
-                    const newCategories = new Set(data.diagnosticCategory || []);
-                    if (dx.category) newCategories.add(dx.category);
+              {(() => {
+                const isF10Category = (data.diagnosticCategory || []).some(c => c.includes('F10-F19'));
 
-                    if (dx.isSevere) {
-                      const indications = new Set(data.admissionIndications || []);
-                      indications.add('เป็นอันตรายต่อตนเอง (Risk of Harm to Self)');
-                      onChange({
-                        primaryDiagnosis: dx.value,
-                        diagnosticCategory: Array.from(newCategories),
-                        ...(dx.comorbid ? { comorbidDiagnosis: dx.comorbid } : {}),
-                        suicideRisk: 'High Risk',
-                        admissionIndications: Array.from(indications),
-                        admissionType: 'IPD',
-                      });
-                    } else {
-                      onChange({
-                        primaryDiagnosis: dx.value,
-                        diagnosticCategory: Array.from(newCategories),
-                        ...(dx.comorbid ? { comorbidDiagnosis: dx.comorbid } : {}),
-                      });
-                    }
-                  }}
-                  className={`text-[10px] font-medium px-2 py-0.5 rounded transition-all cursor-pointer ${
-                    dx.isSevere
-                      ? 'bg-rose-100 hover:bg-rose-200 text-rose-900 font-bold border border-rose-300 shadow-2xs'
-                      : 'bg-blue-50 hover:bg-blue-100 text-blue-900 border border-blue-200'
-                  }`}
-                >
-                  {dx.label}
-                </button>
-              ))}
+                if (isF10Category) {
+                  const f10List = [
+                    {
+                      code: 'F10.2',
+                      label: '🍺 F10.2 Alcohol Dependence',
+                      value: 'F10.2 Alcohol Dependence',
+                      comorbid: 'F10.5 Alcohol induced Psychotic Disorder',
+                    },
+                    {
+                      code: 'F15.2',
+                      label: '💊 F15.2 Stimulant Dependence (ยาบ้า/ไอซ์)',
+                      value: 'F15.2 Stimulant Dependence',
+                      comorbid: 'F15.5 Stimulant induced Psychotic Disorder',
+                    },
+                    {
+                      code: 'F12.2',
+                      label: '🌿 F12.2 Cannabis Dependence (กัญชา)',
+                      value: 'F12.2 Cannabis Dependence',
+                      comorbid: 'F12.5 Cannabis induced Psychotic Disorder',
+                    },
+                    {
+                      code: 'F11.2',
+                      label: '💉 F11.2 Opioid Dependence (ฝิ่น/เฮโรอีน)',
+                      value: 'F11.2 Opioid Dependence',
+                      comorbid: 'F11.5 Opioid induced Psychotic Disorder',
+                    },
+                    {
+                      code: 'F13.2',
+                      label: '💤 F13.2 Sedative Dependence (ยานอนหลับ)',
+                      value: 'F13.2 Sedative Dependence',
+                      comorbid: 'F13.5 Sedative induced Psychotic Disorder',
+                    },
+                    {
+                      code: 'F19.2',
+                      label: '🧪 F19.2 Multiple Substance Dependence (หลายชนิด)',
+                      value: 'F19.2 Multiple Substance Dependence',
+                      comorbid: 'F19.5 Multiple drug induced Psychotic Disorder',
+                    },
+                  ];
+
+                  return (
+                    <>
+                      <span className="text-[11px] font-bold text-amber-700 w-full flex items-center justify-between">
+                        <span className="flex items-center gap-1">
+                          <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                          ICD-10 ด่วนกลุ่ม F10-F19 (เลือก F1x.2 จะกรอก Primary Dx พร้อมระบุ Comorbid F1x.5 อัตโนมัติ):
+                        </span>
+                        <span className="text-[10px] text-slate-500 font-normal">
+                          F1x.2 Dependence &rarr; F1x.5 Psychotic d/o
+                        </span>
+                      </span>
+                      {f10List.map(dx => {
+                        const isSelected = data.primaryDiagnosis?.includes(dx.code);
+                        return (
+                          <button
+                            key={dx.code}
+                            type="button"
+                            onClick={() => {
+                              const newCategories = new Set(data.diagnosticCategory || []);
+                              newCategories.add('F10-F19 Substance-related');
+
+                              const updatedComorbid = appendOrUpdateF1x5Comorbid(data.comorbidDiagnosis, dx.comorbid);
+
+                              onChange({
+                                primaryDiagnosis: dx.value,
+                                diagnosticCategory: Array.from(newCategories),
+                                comorbidDiagnosis: updatedComorbid,
+                              });
+                            }}
+                            className={`text-[10.5px] font-semibold px-2.5 py-1 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${
+                              isSelected
+                                ? 'bg-blue-600 text-white shadow-xs ring-1 ring-blue-400 font-bold'
+                                : 'bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200'
+                            }`}
+                          >
+                            {isSelected && <Check className="w-3 h-3 stroke-[3]" />}
+                            {dx.label}
+                          </button>
+                        );
+                      })}
+                    </>
+                  );
+                }
+
+                // General Quick Diagnosis Chips (non-F10)
+                const generalList = [
+                  {
+                    label: '🧠 Schizophrenia (จิตเภท)',
+                    value: 'Schizophrenia, Paranoid type (F20.0)',
+                    category: 'F20-F29 Schizophrenia/Psychotic',
+                    isSevere: false,
+                  },
+                  {
+                    label: '🚨 Severe MDD (ซึมเศร้ารุนแรง)',
+                    value: 'Major Depressive Episode, Severe without Psychotic Features (F32.2)',
+                    category: 'F30-F39 Mood d/o',
+                    isSevere: true,
+                  },
+                  {
+                    label: '⚡ Bipolar I, Manic (ไบโพลาร์)',
+                    value: 'Bipolar I Disorder, Current episode manic (F31.1)',
+                    category: 'F30-F39 Mood d/o',
+                    isSevere: false,
+                  },
+                  {
+                    label: '😰 GAD (วิตกกังวลทั่วไป)',
+                    value: 'Generalized Anxiety Disorder (F41.1)',
+                    category: 'F40-F48 Anxiety/Somatoform',
+                    isSevere: false,
+                  },
+                  {
+                    label: '🌧️ Adjustment d/o (การปรับตัวผิดปกติ)',
+                    value: 'Adjustment Disorder with depressed mood (F43.21)',
+                    category: 'F40-F48 Anxiety/Somatoform',
+                    isSevere: false,
+                  },
+                  {
+                    label: '🧪 Stimulant psychosis (โรคจิตจากสาร)',
+                    value: 'Other stimulants including caffeine, Psychotic disorder, Schizophrenia-like (F15.50)',
+                    category: 'F10-F19 Substance-related',
+                    comorbid: 'Stimulant dependence (F15.2)',
+                    isSevere: false,
+                  },
+                ];
+
+                return (
+                  <>
+                    <span className="text-[11px] font-bold text-slate-500 w-full flex items-center gap-1">
+                      <Sparkles className="w-3 h-3 text-amber-500" />
+                      คลิกเพื่อเลือก ICD-10 ด่วน (ระบุโรคพร้อมผูกกลุ่มอาการอัตโนมัติ):
+                    </span>
+                    {generalList.map(dx => (
+                      <button
+                        key={dx.value}
+                        type="button"
+                        onClick={() => {
+                          const newCategories = new Set(data.diagnosticCategory || []);
+                          if (dx.category) newCategories.add(dx.category);
+
+                          let newComorbid = data.comorbidDiagnosis;
+                          if (dx.comorbid) {
+                            const current = (data.comorbidDiagnosis || '').trim();
+                            if (!current) {
+                              newComorbid = dx.comorbid;
+                            } else if (!current.includes(dx.comorbid)) {
+                              newComorbid = `${current.replace(/,\s*$/, '')}, ${dx.comorbid}`;
+                            }
+                          }
+
+                          if (dx.isSevere) {
+                            const indications = new Set(data.admissionIndications || []);
+                            indications.add('เป็นอันตรายต่อตนเอง (Risk of Harm to Self)');
+                            onChange({
+                              primaryDiagnosis: dx.value,
+                              diagnosticCategory: Array.from(newCategories),
+                              ...(dx.comorbid ? { comorbidDiagnosis: newComorbid } : {}),
+                              suicideRisk: 'High Risk',
+                              admissionIndications: Array.from(indications),
+                              admissionType: 'IPD',
+                            });
+                          } else {
+                            onChange({
+                              primaryDiagnosis: dx.value,
+                              diagnosticCategory: Array.from(newCategories),
+                              ...(dx.comorbid ? { comorbidDiagnosis: newComorbid } : {}),
+                            });
+                          }
+                        }}
+                        className={`text-[10px] font-medium px-2 py-0.5 rounded transition-all cursor-pointer ${
+                          dx.isSevere
+                            ? 'bg-rose-100 hover:bg-rose-200 text-rose-900 font-bold border border-rose-300 shadow-2xs'
+                            : 'bg-blue-50 hover:bg-blue-100 text-blue-900 border border-blue-200'
+                        }`}
+                      >
+                        {dx.label}
+                      </button>
+                    ))}
+                  </>
+                );
+              })()}
             </div>
 
             <input
               type="text"
               value={data.primaryDiagnosis}
-              onChange={e => onChange({ primaryDiagnosis: e.target.value })}
-              onBlur={e => onBlurField && onBlurField('primaryDiagnosis', e.target.value)}
-              placeholder="เช่น Major Depressive Disorder (F32.1)"
+              onChange={e => {
+                const val = e.target.value;
+                const f1x5 = getF1x5FromPrimaryDiagnosis(val);
+                if (f1x5) {
+                  const updatedComorbid = appendOrUpdateF1x5Comorbid(data.comorbidDiagnosis, f1x5);
+                  onChange({
+                    primaryDiagnosis: val,
+                    comorbidDiagnosis: updatedComorbid,
+                  });
+                } else {
+                  onChange({ primaryDiagnosis: val });
+                }
+              }}
+              onBlur={e => {
+                const val = e.target.value;
+                if (onBlurField) onBlurField('primaryDiagnosis', val);
+                const f1x5 = getF1x5FromPrimaryDiagnosis(val);
+                if (f1x5) {
+                  const updatedComorbid = appendOrUpdateF1x5Comorbid(data.comorbidDiagnosis, f1x5);
+                  if (updatedComorbid !== data.comorbidDiagnosis) {
+                    onChange({ comorbidDiagnosis: updatedComorbid });
+                  }
+                }
+              }}
+              placeholder="เช่น F10.2 Alcohol Dependence หรือ Major Depressive Disorder (F32.1)"
               className={`w-full text-sm font-semibold bg-white border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-600 focus:outline-none ${
                 errors.primaryDiagnosis ? 'border-red-500 bg-red-50' : 'border-slate-300'
               }`}
+            />
+
+            {/* AI-assisted ICD-10 suggestions from notes / symptoms */}
+            <Icd10AiSuggester
+              notes={data.hpiDetails}
+              symptoms={[...(data.chiefComplaint || []), ...(data.associatedSymptoms || [])]}
+              currentCategory={data.diagnosticCategory}
+              currentPrimaryDx={data.primaryDiagnosis}
+              onApplyDiagnosis={handleApplyAiDiagnosis}
             />
           </div>
 
@@ -1028,17 +1182,26 @@ const Step1PatientAndDiagnosisComponent: React.FC<AssessmentStepProps> = ({
 
             {/* Comorbidity */}
             <div>
-              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
-                Comorbidity (โรคร่วมทางจิตเวช / โรคประจำตัวเดิม)
+              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1 flex items-center justify-between">
+                <span>Comorbidity (โรคร่วมทางจิตเวช / โรคประจำตัวเดิม)</span>
+                {data.comorbidDiagnosis && /F1\d\.5/.test(data.comorbidDiagnosis) && (
+                  <span className="text-[11px] text-emerald-700 font-semibold normal-case flex items-center gap-1 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                    <Check className="w-3 h-3 stroke-[3]" />
+                    คงโรคประจำตัวเดิม และผูก F1x.5 ให้แล้ว
+                  </span>
+                )}
               </label>
               <input
                 type="text"
                 value={data.comorbidDiagnosis || ''}
                 onChange={e => onChange({ comorbidDiagnosis: e.target.value })}
                 onBlur={e => onBlurField && onBlurField('comorbidDiagnosis', e.target.value)}
-                placeholder="เช่น Stimulant dependence (F15.2), HT, DM, DLP"
+                placeholder="เช่น F10.5 Alcohol induced Psychotic Disorder, HT, DM, DLP"
                 className="w-full text-sm bg-white border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-600 focus:outline-none"
               />
+              <span className="text-[11px] text-slate-500 mt-1 block">
+                💡 เมื่อเลือกโรคหลัก F1x.2 ระบบจะต่อท้าย F1x.5 ให้อัตโนมัติ โดยไม่ลบโรคประจำตัวเดิม (เช่น HT, DM)
+              </span>
             </div>
           </div>
         </div>

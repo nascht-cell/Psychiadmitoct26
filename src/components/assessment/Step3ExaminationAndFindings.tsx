@@ -156,11 +156,11 @@ const Step3ExaminationAndFindingsComponent: React.FC<AssessmentStepProps> = ({
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 w-full">
                   {[
                     { name: 'Normal', label: 'Normal', activeCls: 'bg-emerald-600 text-white border-emerald-600 shadow-xs' },
-                    { name: 'Poor hygiene', label: 'Poor hygiene', activeCls: 'bg-amber-600 text-white border-amber-600 shadow-xs' },
-                    { name: 'Restless/Agitated', label: 'Restless / Agitated', activeCls: 'bg-orange-600 text-white border-orange-600 shadow-xs ring-1 ring-orange-300' },
                     { name: 'Retardation', label: 'Retardation', activeCls: 'bg-indigo-600 text-white border-indigo-600 shadow-xs' },
-                    { name: 'Uncooperative', label: 'Uncooperative', activeCls: 'bg-rose-600 text-white border-rose-600 shadow-xs' },
+                    { name: 'Poor hygiene', label: 'Poor hygiene', activeCls: 'bg-amber-600 text-white border-amber-600 shadow-xs' },
                     { name: 'EPS', label: 'EPS', activeCls: 'bg-rose-700 text-white border-rose-700 shadow-xs ring-2 ring-rose-400' },
+                    { name: 'Restless/Agitated', label: 'Restless / Agitated', activeCls: 'bg-orange-600 text-white border-orange-600 shadow-xs ring-1 ring-orange-300' },
+                    { name: 'Uncooperative', label: 'Uncooperative', activeCls: 'bg-rose-600 text-white border-rose-600 shadow-xs' },
                   ].map(({ name: item, label, activeCls }) => {
                     const isSelected =
                       data.appearanceBehavior.includes(item) ||
@@ -204,10 +204,10 @@ const Step3ExaminationAndFindingsComponent: React.FC<AssessmentStepProps> = ({
                   {[
                     { name: 'Normal', label: 'Normal', activeCls: 'bg-emerald-600 text-white border-emerald-600 shadow-xs' },
                     { name: 'Slow/Poverty of speech', label: 'Slow / Poverty', activeCls: 'bg-indigo-600 text-white border-indigo-600 shadow-xs' },
+                    { name: 'Mute', label: 'Mute', activeCls: 'bg-slate-700 text-white border-slate-700 shadow-xs' },
+                    { name: 'Slurred', label: 'Slurred', activeCls: 'bg-purple-600 text-white border-purple-600 shadow-xs' },
                     { name: 'Talkative/Pressured', label: 'Pressured', activeCls: 'bg-orange-600 text-white border-orange-600 shadow-xs ring-1 ring-orange-300' },
                     { name: 'Loud/Aggressive', label: 'Loud / Aggressive', activeCls: 'bg-rose-600 text-white border-rose-600 shadow-xs' },
-                    { name: 'Slurred', label: 'Slurred', activeCls: 'bg-purple-600 text-white border-purple-600 shadow-xs' },
-                    { name: 'Mute', label: 'Mute', activeCls: 'bg-slate-700 text-white border-slate-700 shadow-xs' },
                   ].map(({ name: item, label, activeCls }) => {
                     const isSelected = data.speech.includes(item);
                     return (
@@ -248,10 +248,10 @@ const Step3ExaminationAndFindingsComponent: React.FC<AssessmentStepProps> = ({
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 w-full">
                   {[
                     { name: 'Euthymic', label: 'Euthymic', activeCls: 'bg-emerald-600 text-white border-emerald-600 shadow-xs' },
+                    { name: 'Anxious', label: 'Anxious', activeCls: 'bg-amber-600 text-white border-amber-600 shadow-xs' },
                     { name: 'Depressed', label: 'Depressed', activeCls: 'bg-blue-600 text-white border-blue-600 shadow-xs' },
                     { name: 'Euphoric/Elated', label: 'Euphoric / Elated', activeCls: 'bg-purple-600 text-white border-purple-600 shadow-xs' },
                     { name: 'Irritable/Angry', label: 'Irritable / Angry', alt: 'Labile', activeCls: 'bg-rose-600 text-white border-rose-600 shadow-xs ring-1 ring-rose-300' },
-                    { name: 'Anxious', label: 'Anxious', activeCls: 'bg-amber-600 text-white border-amber-600 shadow-xs' },
                     { name: 'Blunted/Flat', label: 'Blunted / Flat', activeCls: 'bg-slate-600 text-white border-slate-600 shadow-xs' },
                   ].map(({ name: item, label, alt, activeCls }) => {
                     const isSelected =
@@ -301,10 +301,10 @@ const Step3ExaminationAndFindingsComponent: React.FC<AssessmentStepProps> = ({
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 w-full">
                   {[
                     { name: 'Logical/Coherent', label: 'Logical / Coherent', activeCls: 'bg-emerald-600 text-white border-emerald-600 shadow-xs' },
-                    { name: 'Flight of ideas', label: 'Flight of ideas', activeCls: 'bg-purple-600 text-white border-purple-600 shadow-xs' },
-                    { name: 'Loose association', label: 'Loose association', activeCls: 'bg-orange-600 text-white border-orange-600 shadow-xs' },
                     { name: 'Circumstantial', label: 'Circumstantial', activeCls: 'bg-amber-600 text-white border-amber-600 shadow-xs' },
                     { name: 'Tangential', label: 'Tangential', activeCls: 'bg-indigo-600 text-white border-indigo-600 shadow-xs' },
+                    { name: 'Flight of ideas', label: 'Flight of ideas', activeCls: 'bg-purple-600 text-white border-purple-600 shadow-xs' },
+                    { name: 'Loose association', label: 'Loose association', activeCls: 'bg-orange-600 text-white border-orange-600 shadow-xs' },
                     { name: 'Incoherent', label: 'Incoherent', activeCls: 'bg-rose-600 text-white border-rose-600 shadow-xs ring-1 ring-rose-300' },
                   ].map(({ name: item, label, activeCls }) => {
                     const isSelected = data.thoughtProcess.includes(item);
@@ -346,11 +346,11 @@ const Step3ExaminationAndFindingsComponent: React.FC<AssessmentStepProps> = ({
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 w-full">
                   {[
                     { name: 'Normal', label: 'Normal', activeCls: 'bg-emerald-600 text-white border-emerald-600 shadow-xs' },
+                    { name: 'Obsession/Phobia', label: 'Obsession / Phobia', activeCls: 'bg-amber-600 text-white border-amber-600 shadow-xs' },
+                    { name: 'Grandiosity', label: 'Grandiosity', activeCls: 'bg-purple-600 text-white border-purple-600 shadow-xs' },
                     { name: 'Delusion', label: 'Delusion', activeCls: 'bg-rose-600 text-white border-rose-600 shadow-xs ring-1 ring-rose-300' },
                     { name: 'Suicidal ideation', label: 'Suicidal ideation', activeCls: 'bg-rose-700 text-white border-rose-700 shadow-xs ring-2 ring-rose-400' },
                     { name: 'Homicidal ideation', label: 'Homicidal ideation', activeCls: 'bg-rose-800 text-white border-rose-800 shadow-xs ring-2 ring-rose-500' },
-                    { name: 'Obsession/Phobia', label: 'Obsession / Phobia', activeCls: 'bg-amber-600 text-white border-amber-600 shadow-xs' },
-                    { name: 'Grandiosity', label: 'Grandiosity', activeCls: 'bg-purple-600 text-white border-purple-600 shadow-xs' },
                   ].map(({ name: item, label, activeCls }) => {
                     const isSelected = data.thoughtContent.includes(item);
                     return (
@@ -402,11 +402,11 @@ const Step3ExaminationAndFindingsComponent: React.FC<AssessmentStepProps> = ({
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 w-full">
                   {[
                     { name: 'Normal', label: 'Normal', activeCls: 'bg-emerald-600 text-white border-emerald-600 shadow-xs' },
+                    { name: 'Illusion', label: 'Illusion', activeCls: 'bg-amber-600 text-white border-amber-600 shadow-xs' },
+                    { name: 'Depersonalization', label: 'Depersonalization', activeCls: 'bg-teal-600 text-white border-teal-600 shadow-xs' },
                     { name: 'Auditory Hallucination', label: 'Auditory Hallucination', activeCls: 'bg-purple-600 text-white border-purple-600 shadow-xs ring-1 ring-purple-300' },
                     { name: 'Visual Hallucination', label: 'Visual Hallucination', activeCls: 'bg-indigo-600 text-white border-indigo-600 shadow-xs' },
-                    { name: 'Illusion', label: 'Illusion', activeCls: 'bg-amber-600 text-white border-amber-600 shadow-xs' },
                     { name: 'Somatic Hallucination', label: 'Somatic Hallucination', activeCls: 'bg-rose-600 text-white border-rose-600 shadow-xs' },
-                    { name: 'Depersonalization', label: 'Depersonalization', activeCls: 'bg-teal-600 text-white border-teal-600 shadow-xs' },
                   ].map(({ name: item, label, activeCls }) => {
                     const isSelected = data.perception.includes(item);
                     return (

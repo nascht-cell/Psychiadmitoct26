@@ -130,8 +130,13 @@ export const LocalHistoryModal: React.FC<LocalHistoryModalProps> = ({
     const a = document.createElement('a');
     a.href = url;
     a.download = `Assessment_${rec.hn || 'Draft'}_${rec.assessmentDate}.json`;
+    a.style.display = 'none';
+    document.body.appendChild(a);
     a.click();
-    URL.revokeObjectURL(url);
+    setTimeout(() => {
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }, 1500);
     showNotification(`ดาวน์โหลดไฟล์ .json ของ HN: ${rec.hn} ลงเครื่องแล้ว`);
   };
 
@@ -142,8 +147,13 @@ export const LocalHistoryModal: React.FC<LocalHistoryModalProps> = ({
     const a = document.createElement('a');
     a.href = url;
     a.download = `Psychiatric_Assessments_Backup_${new Date().toISOString().split('T')[0]}.json`;
+    a.style.display = 'none';
+    document.body.appendChild(a);
     a.click();
-    URL.revokeObjectURL(url);
+    setTimeout(() => {
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }, 1500);
     showNotification('สำรองไฟล์ประวัติทั้งหมด (.json) ลงเครื่องเรียบร้อยแล้ว');
   };
 

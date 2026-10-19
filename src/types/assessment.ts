@@ -71,7 +71,7 @@ export interface PsychiatricAssessment {
   orientationPlace: boolean;
   orientationPerson: boolean;
   attentionMemory: 'Intact' | 'Impaired' | '';
-  insight: '1(Denial)' | '2' | '3' | '4' | '5' | '6(True)' | '';
+  insight: '1(Complete denial)' | '2(Slight awareness)' | '3(Aware but blaming)' | '4(Aware illness unknown)' | '5(Intellectual)' | '6(True)' | string;
   judgment: 'Intact' | 'Impaired' | '';
 
   // Section E: Safety & Risk Assessment
@@ -177,6 +177,7 @@ export interface PsychiatricAssessment {
   signatureText: string;
   assessmentDateTimeDone: string;
   allowPage4?: boolean;
+  autoPrintAfterSave?: boolean;
 }
 
 export const initialAssessmentData: PsychiatricAssessment = {
@@ -250,7 +251,7 @@ export const initialAssessmentData: PsychiatricAssessment = {
   orientationPlace: true,
   orientationPerson: true,
   attentionMemory: 'Intact',
-  insight: '6(True)',
+  insight: '4(Aware illness unknown)',
   judgment: 'Intact',
 
   // Section E
@@ -356,6 +357,7 @@ export const initialAssessmentData: PsychiatricAssessment = {
   signatureText: '',
   assessmentDateTimeDone: `${new Date().toLocaleDateString('th-TH')} ${new Date().toTimeString().slice(0, 5)} น.`,
   allowPage4: false,
+  autoPrintAfterSave: true,
 };
 
 export const constructFullName = (firstName?: string, lastName?: string, titlePrefix?: string): string => {
@@ -488,7 +490,7 @@ export const samplePatientData: PsychiatricAssessment = {
 
   pharmPlan: 'ปรับ/เริ่มยาใหม่',
   medicationGroups: ['Antidepressants', 'Anxiolytics/Sedatives'],
-  medicationDetails: 'Sertraline (50 mg) 1 tab po pc morning, Lorazepam (0.5 mg) 1 tab po hs prn for insomnia',
+  medicationDetails: '',
   nonPharmTreatments: ['Psychoeducation', 'Supportive Psychotherapy', 'CBT / Specific Psychotherapy'],
   mdtConsult: 'ส่ง',
   mdtRoles: ['นักจิตวิทยาคลินิก'],
@@ -507,4 +509,5 @@ export const samplePatientData: PsychiatricAssessment = {
   licenseNumber: 'ว. 45892',
   signatureText: 'พญ. นภาพร แพทย์เวชกรรม',
   allowPage4: false,
+  autoPrintAfterSave: true,
 };

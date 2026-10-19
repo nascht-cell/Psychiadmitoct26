@@ -81,6 +81,8 @@ export const purgeAllLocalData = (): void => {
     sessionStorage.removeItem(FORM_DRAFT_KEY);
     localStorage.removeItem(FORM_DRAFT_KEY);
     localStorage.removeItem(LOCAL_HISTORY_KEY);
+    memoryCacheRaw = null;
+    memoryCacheList = [];
   } catch (error) {
     console.error('Error purging all local data:', error);
   }
@@ -90,10 +92,23 @@ export const purgeAllLocalData = (): void => {
 // Multi-Record Local Storage History (Browser Only - 100% Private)
 // ----------------------------------------------------
 
+// In-memory write-through cache to eliminate repeated AES-GCM decryptions & JSON parsing
+let memoryCacheRaw: string | null = null;
+let memoryCacheList: SavedRecordItem[] | null = null;
+
 export const loadLocalHistory = async (): Promise<SavedRecordItem[]> => {
   try {
     const raw = localStorage.getItem(LOCAL_HISTORY_KEY);
-    if (!raw) return [];
+    if (!raw) {
+      memoryCacheRaw = null;
+      memoryCacheList = [];
+      return [];
+    }
+
+    // Fast-path: return cached decrypted array in O(1) time if storage hasn't changed
+    if (raw === memoryCacheRaw && memoryCacheList !== null) {
+      return memoryCacheList;
+    }
 
     let plaintext = '';
     if (raw.trim().startsWith('[')) {
@@ -105,7 +120,10 @@ export const loadLocalHistory = async (): Promise<SavedRecordItem[]> => {
     const items: SavedRecordItem[] = JSON.parse(plaintext);
     if (Array.isArray(items)) {
       // Sort newest first
-      return items.sort((a, b) => new Date(b.savedAt).getTime() - new Date(a.savedAt).getTime());
+      items.sort((a, b) => new Date(b.savedAt).getTime() - new Date(a.savedAt).getTime());
+      memoryCacheRaw = raw;
+      memoryCacheList = items;
+      return items;
     }
     return [];
   } catch (error) {
@@ -143,6 +161,8 @@ export const saveToLocalHistory = async (data: PsychiatricAssessment): Promise<b
     const plaintext = JSON.stringify(updatedList);
     const encrypted = await encryptAtRest(plaintext);
     localStorage.setItem(LOCAL_HISTORY_KEY, encrypted);
+    memoryCacheRaw = encrypted;
+    memoryCacheList = updatedList;
     return true;
   } catch (error) {
     console.error('Error saving to local history:', error);
@@ -158,6 +178,8 @@ export const deleteFromLocalHistory = async (id: string): Promise<boolean> => {
     const plaintext = JSON.stringify(updatedList);
     const encrypted = await encryptAtRest(plaintext);
     localStorage.setItem(LOCAL_HISTORY_KEY, encrypted);
+    memoryCacheRaw = encrypted;
+    memoryCacheList = updatedList;
     return true;
   } catch (error) {
     console.error('Error deleting item from local history:', error);
@@ -168,9 +190,52 @@ export const deleteFromLocalHistory = async (id: string): Promise<boolean> => {
 export const clearAllLocalHistory = async (): Promise<boolean> => {
   try {
     localStorage.removeItem(LOCAL_HISTORY_KEY);
+    memoryCacheRaw = null;
+    memoryCacheList = [];
     return true;
   } catch (error) {
     console.error('Error clearing all local history:', error);
     return false;
   }
 };
+
+// ----------------------------------------------------
+// Clinician Preferences & Settings (Auto-print, layouts)
+// ----------------------------------------------------
+export const CLINICIAN_SETTINGS_KEY = 'ha_clinician_settings';
+
+export interface ClinicianSettings {
+  autoPrintAfterSave: boolean;
+  defaultAllowPage4?: boolean;
+  defaultPhysicianName?: string;
+  defaultLicenseNumber?: string;
+}
+
+export const loadClinicianSettings = (): ClinicianSettings => {
+  try {
+    const raw = localStorage.getItem(CLINICIAN_SETTINGS_KEY);
+    if (!raw) return { autoPrintAfterSave: true };
+    const parsed = JSON.parse(raw);
+    return {
+      autoPrintAfterSave: parsed.autoPrintAfterSave !== undefined ? Boolean(parsed.autoPrintAfterSave) : true,
+      defaultAllowPage4: Boolean(parsed.defaultAllowPage4),
+      defaultPhysicianName: parsed.defaultPhysicianName || '',
+      defaultLicenseNumber: parsed.defaultLicenseNumber || '',
+    };
+  } catch (_) {
+    return { autoPrintAfterSave: true };
+  }
+};
+
+export const saveClinicianSettings = (settings: Partial<ClinicianSettings>): ClinicianSettings => {
+  try {
+    const current = loadClinicianSettings();
+    const updated = { ...current, ...settings };
+    localStorage.setItem(CLINICIAN_SETTINGS_KEY, JSON.stringify(updated));
+    return updated;
+  } catch (e) {
+    console.error('Error saving clinician settings:', e);
+    return { autoPrintAfterSave: true, ...settings };
+  }
+};
+

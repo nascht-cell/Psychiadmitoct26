@@ -172,11 +172,23 @@ const renderSingleValue = (val: string | undefined) => {
 
 const renderInsight = (val: string | undefined) => {
   if (!val) return <span className="text-slate-400 font-normal">-</span>;
-  if (val === '6' || val.toLowerCase().includes('true insight') || val.toLowerCase().includes('level 6')) {
+  if (val === '6' || val.toLowerCase().includes('true insight') || val.toLowerCase().includes('level 6') || val === '6(True)') {
     return <span className="text-slate-700 font-normal">True insight (Level 6)</span>;
   }
-  if (val === '5' || val.toLowerCase().includes('intellectual')) {
+  if (val === '5' || val.toLowerCase().includes('intellectual') || val === '5(Intellectual)') {
     return <span className="text-black font-bold">Intellectual insight (Level 5)</span>;
+  }
+  if (val === '4' || val.toLowerCase().includes('unknown') || val === '4(Aware illness unknown)') {
+    return <span className="text-black font-bold">Aware illness unknown (Level 4)</span>;
+  }
+  if (val === '3' || val.toLowerCase().includes('blaming') || val === '3(Aware but blaming)') {
+    return <span className="text-black font-bold">Aware but blaming (Level 3)</span>;
+  }
+  if (val === '2' || val.toLowerCase().includes('slight') || val === '2(Slight awareness)') {
+    return <span className="text-black font-bold">Slight awareness (Level 2)</span>;
+  }
+  if (val === '1' || val.toLowerCase().includes('denial') || val === '1(Complete denial)') {
+    return <span className="text-black font-bold">Complete denial (Level 1)</span>;
   }
   const isNormal = val.includes('6') || val.toLowerCase().includes('true');
   return (
@@ -435,11 +447,6 @@ const AssessmentPdfDocumentComponent: React.FC<Props> = ({ data, showPageBadges 
           <span className="font-normal text-slate-800">1. Pharmacological:</span> <span className="font-normal text-slate-800">{data.pharmPlan}</span>
           {data.medicationGroups && data.medicationGroups.length > 0 && (
             <span className="ml-2 font-normal text-slate-800">[{data.medicationGroups.join(', ')}]</span>
-          )}
-          {data.medicationDetails && (
-            <div className="pl-3 font-normal text-black">
-              <span className="font-normal text-slate-800">คำสั่งยา:</span> {data.medicationDetails}
-            </div>
           )}
         </div>
         <div>
@@ -729,7 +736,7 @@ const AssessmentPdfDocumentComponent: React.FC<Props> = ({ data, showPageBadges 
 
               <div className="grid grid-cols-12 gap-1.5 pt-0.5 pdf-grid-12" style={{ display: 'flex', flexWrap: 'wrap', width: '100%', paddingTop: '2px', marginTop: '2px' }}>
                 <div className="col-span-6" style={{ width: '50%', boxSizing: 'border-box' }}>
-                  <span className="font-normal text-slate-800" style={{ color: '#1e293b' }}>ประวัติการรักษาเดิม:</span> <span className="font-normal">{data.previousTreatment || '-'}{data.previousHospital && ` (รพ. ${data.previousHospital})`}</span>
+                  <span className="font-normal text-slate-800" style={{ color: '#1e293b' }}>ประวัติการรักษาเดิม:</span> <span className="font-normal">{data.previousTreatment || '-'}{data.previousHospital ? (data.previousHospital.startsWith('รพ.') ? ` (${data.previousHospital})` : ` (รพ. ${data.previousHospital})`) : ''}</span>
                 </div>
                 <div className="col-span-6" style={{ width: '50%', boxSizing: 'border-box' }}>
                   <span className="font-normal text-slate-800" style={{ color: '#1e293b' }}>การตอบสนอง:</span> <span className="font-normal">{data.previousResponse || '-'}</span>

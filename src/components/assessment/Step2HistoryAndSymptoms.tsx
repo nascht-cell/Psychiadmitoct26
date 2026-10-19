@@ -22,6 +22,9 @@ import {
   detectDiagnosticGroup,
   getSymptomsByGroup,
 } from '../../utils/symptomMapping';
+import { Icd10AiSuggester } from './Icd10AiSuggester';
+import { Icd10Suggestion } from '../../utils/icd10SuggestHelper';
+import { appendOrUpdateF1x5Comorbid } from '../../utils/diagnosisHelper';
 
 const Step2HistoryAndSymptomsComponent: React.FC<AssessmentStepProps> = ({
   data,
@@ -77,6 +80,22 @@ const Step2HistoryAndSymptomsComponent: React.FC<AssessmentStepProps> = ({
     });
     return list;
   }, [associatedSymptoms, data.associatedSymptoms]);
+
+  const handleApplyAiDiagnosis = (sug: Icd10Suggestion) => {
+    const newCategories = new Set(data.diagnosticCategory || []);
+    if (sug.category) newCategories.add(sug.category);
+
+    let updatedComorbid = data.comorbidDiagnosis;
+    if (sug.suggestedComorbid) {
+      updatedComorbid = appendOrUpdateF1x5Comorbid(data.comorbidDiagnosis, sug.suggestedComorbid);
+    }
+
+    onChange({
+      primaryDiagnosis: sug.formatted,
+      diagnosticCategory: Array.from(newCategories),
+      comorbidDiagnosis: updatedComorbid,
+    });
+  };
 
   return (
     <div className="space-y-6">
@@ -376,6 +395,15 @@ const Step2HistoryAndSymptomsComponent: React.FC<AssessmentStepProps> = ({
                 placeholder="บันทึกเรื่องราวการเจ็บป่วย เหตุการณ์นำมา ลำดับอาการ พฤติกรรมที่สังเกตได้..."
                 className="w-full text-sm bg-white border border-slate-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-600 focus:outline-none"
               />
+
+              {/* AI-assisted ICD-10 suggestions from notes */}
+              <Icd10AiSuggester
+                notes={data.hpiDetails}
+                symptoms={[...(data.chiefComplaint || []), ...(data.associatedSymptoms || [])]}
+                currentCategory={data.diagnosticCategory}
+                currentPrimaryDx={data.primaryDiagnosis}
+                onApplyDiagnosis={handleApplyAiDiagnosis}
+              />
             </div>
           </div>
 
@@ -478,17 +506,53 @@ const Step2HistoryAndSymptomsComponent: React.FC<AssessmentStepProps> = ({
 
             {data.previousTreatment === 'เคยรักษา' && (
               <>
-                <div>
+                <div className="space-y-1.5">
                   <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
-                    เคยรักษาที่ (ระบุ รพ./คลินิก)
+                    เคยรักษาที่ (ระบุสถานพยาบาล)
                   </label>
-                  <DebouncedInput
-                    type="text"
-                    value={data.previousHospital}
-                    onChangeValue={val => onChange({ previousHospital: val })}
-                    placeholder="ระบุสถานพยาบาลเดิม"
-                    className="w-full text-sm bg-white border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-600 focus:outline-none"
-                  />
+                  <div className="flex flex-wrap gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => onChange({ previousHospital: 'รพ.ภูมิพลฯ' })}
+                      className={`px-3 py-1.5 text-xs font-bold rounded-lg border transition-all cursor-pointer flex items-center gap-1.5 ${
+                        data.previousHospital === 'รพ.ภูมิพลฯ'
+                          ? 'bg-blue-600 text-white border-blue-600 shadow-xs ring-1 ring-blue-300'
+                          : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'
+                      }`}
+                    >
+                      {data.previousHospital === 'รพ.ภูมิพลฯ' && <Check className="w-3.5 h-3.5 stroke-[3]" />}
+                      รพ.ภูมิพลฯ
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (data.previousHospital === 'รพ.ภูมิพลฯ' || !data.previousHospital) {
+                          onChange({ previousHospital: 'รพ.อื่น' });
+                        }
+                      }}
+                      className={`px-3 py-1.5 text-xs font-bold rounded-lg border transition-all cursor-pointer flex items-center gap-1.5 ${
+                        data.previousHospital && data.previousHospital !== 'รพ.ภูมิพลฯ'
+                          ? 'bg-indigo-600 text-white border-indigo-600 shadow-xs ring-1 ring-indigo-300'
+                          : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'
+                      }`}
+                    >
+                      {data.previousHospital && data.previousHospital !== 'รพ.ภูมิพลฯ' && (
+                        <Check className="w-3.5 h-3.5 stroke-[3]" />
+                      )}
+                      รพ.อื่น
+                    </button>
+                  </div>
+                  {data.previousHospital && data.previousHospital !== 'รพ.ภูมิพลฯ' && (
+                    <div className="pt-1">
+                      <DebouncedInput
+                        type="text"
+                        value={data.previousHospital === 'รพ.อื่น' ? '' : data.previousHospital}
+                        onChangeValue={val => onChange({ previousHospital: val || 'รพ.อื่น' })}
+                        placeholder="ระบุชื่อสถานพยาบาลอื่น เช่น รพ.สมเด็จเจ้าพระยา, รพ.รามาธิบดี..."
+                        className="w-full text-xs bg-white border border-slate-300 rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-blue-600 focus:outline-none"
+                      />
+                    </div>
+                  )}
                 </div>
 
                 <div>
