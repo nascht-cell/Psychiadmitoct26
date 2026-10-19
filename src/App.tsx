@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect, useRef, useCallback, useMemo, Suspense } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo, Suspense, useReducer, useDeferredValue } from 'react';
 import {
   Save,
   Download,
@@ -21,6 +21,7 @@ import {
   Settings,
 } from 'lucide-react';
 import { PsychiatricAssessment, initialAssessmentData, samplePatientData, parseFullName } from './types/assessment';
+import { assessmentReducer, initialAssessmentState } from './reducers/assessmentReducer';
 import { PsychiatricAssessmentForm } from './components/PsychiatricAssessmentForm';
 import { PWAInstallButton } from './components/PWAInstallButton';
 import { OfflineIndicator } from './components/OfflineIndicator';
@@ -58,8 +59,10 @@ const REQUIRED_FIELDS = [
 ] as const;
 
 export default function App() {
-  const [formData, setFormData] = useState<PsychiatricAssessment>(initialAssessmentData);
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [formState, dispatch] = useReducer(assessmentReducer, initialAssessmentState);
+  const { data: formData, errors } = formState;
+  const deferredFormData = useDeferredValue(formData);
+
   const [currentStep, setCurrentStep] = useState(1);
   const [viewMode, setViewMode] = useState<'wizard' | 'full'>('wizard');
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
@@ -96,13 +99,15 @@ export default function App() {
     // Load clinician preferences (autoPrintAfterSave, default 4-page, physician defaults)
     try {
       const clinicianPrefs = loadClinicianSettings();
-      setFormData(prev => ({
-        ...prev,
-        autoPrintAfterSave: clinicianPrefs.autoPrintAfterSave,
-        allowPage4: prev.allowPage4 !== undefined ? prev.allowPage4 : Boolean(clinicianPrefs.defaultAllowPage4),
-        physicianName: prev.physicianName || clinicianPrefs.defaultPhysicianName || '',
-        licenseNumber: prev.licenseNumber || clinicianPrefs.defaultLicenseNumber || '',
-      }));
+      dispatch({
+        type: 'UPDATE_FIELDS',
+        payload: {
+          autoPrintAfterSave: clinicianPrefs.autoPrintAfterSave,
+          allowPage4: Boolean(clinicianPrefs.defaultAllowPage4),
+          physicianName: clinicianPrefs.defaultPhysicianName || '',
+          licenseNumber: clinicianPrefs.defaultLicenseNumber || '',
+        },
+      });
     } catch (e) {
       console.warn('Error loading clinician settings on mount:', e);
     }
@@ -225,25 +230,8 @@ export default function App() {
   }, [formData.hn, formData.firstName, formData.lastName, formData.fullName, formData.age, formData.gender, formData.physicianName]);
 
   const handleFormChange = useCallback((updated: Partial<PsychiatricAssessment>) => {
-    setFormData((prev) => ({
-      ...prev,
-      ...updated,
-    }));
-
-    // Clear specific errors in real-time as user fills the field
-    setErrors((prev) => {
-      let hasChanges = false;
-      const next = { ...prev };
-      Object.keys(updated).forEach(key => {
-        const val = updated[key as keyof PsychiatricAssessment];
-        const isFilled = typeof val === 'string' ? val.trim().length > 0 : Boolean(val);
-        if (isFilled && next[key]) {
-          delete next[key];
-          hasChanges = true;
-        }
-      });
-      return hasChanges ? next : prev;
-    });
+    // Atomic reducer dispatch: updates fields, bails out if identical, and clears active errors
+    dispatch({ type: 'UPDATE_FIELDS', payload: updated });
   }, []);
 
   const handleBlurField = useCallback((field: string, value: any) => {
@@ -251,66 +239,20 @@ export default function App() {
     if (reqField) {
       const isFilled = typeof value === 'string' ? value.trim().length > 0 : Boolean(value);
       if (!isFilled) {
-        setErrors(prev => ({ ...prev, [field]: reqField.error }));
+        dispatch({ type: 'SET_FIELD_ERROR', payload: { field, error: reqField.error } });
       } else {
-        setErrors(prev => {
-          if (!prev[field]) return prev;
-          const next = { ...prev };
-          delete next[field];
-          return next;
-        });
+        dispatch({ type: 'CLEAR_FIELD_ERROR', payload: { field } });
       }
     }
   }, []);
 
   const handleApplyWnlMse = useCallback(() => {
-    setFormData(prev => ({
-      ...prev,
-      appearanceBehavior: ['Normal'],
-      speech: ['Normal'],
-      moodAffect: ['Euthymic'],
-      thoughtProcess: ['Logical/Coherent'],
-      thoughtContent: ['Normal'],
-      delusionDetail: '',
-      perception: ['Normal'],
-      orientationTime: true,
-      orientationPlace: true,
-      orientationPerson: true,
-      attentionMemory: 'Intact',
-      insight: '6(True)',
-      judgment: 'Intact',
-    }));
+    dispatch({ type: 'APPLY_WNL_MSE' });
     showToast('info', 'ตั้งค่าสภาพจิตปกติ (WNL)', 'ปรับสถานะการตรวจสภาพจิต (MSE) ทั้งหมดเป็นปกติเรียบร้อย');
   }, []);
 
   const handleApplyWnlPhysical = useCallback(() => {
-    setFormData(prev => ({
-      ...prev,
-      generalAppearance: 'Normal',
-      generalAppearanceDetail: '',
-      heent: 'Normal',
-      heentDetail: '',
-      cvsRs: 'Normal',
-      cvsRsDetail: '',
-      abdomen: 'Normal',
-      abdomenDetail: '',
-      extremities: 'Normal',
-      extremitiesDetail: '',
-      cranialNerves: 'Grossly intact',
-      cranialNervesDetail: '',
-      motorPower: 'Grade V all',
-      motorPowerDetail: '',
-      tone: 'Normal',
-      toneDetail: '',
-      sensory: 'Intact',
-      sensoryDetail: '',
-      reflexes: 'Normal',
-      reflexesDetail: '',
-      cerebellar: 'Normal',
-      cerebellarDetail: '',
-      nutrition: 'Normal',
-      adl: 'Independent',
-    }));
+    dispatch({ type: 'APPLY_WNL_PHYSICAL' });
     showToast('info', 'ตั้งค่าการตรวจร่างกายปกติ (WNL)', 'ปรับสถานะสัญญาณชีพ/ร่างกายและระบบประสาททั้งหมดเป็นปกติเรียบร้อย');
   }, []);
 
@@ -322,7 +264,7 @@ export default function App() {
       newErrors[field.key] = field.error;
     });
 
-    setErrors(newErrors);
+    dispatch({ type: 'SET_ERRORS', payload: newErrors });
 
     if (emptyFields.length > 0) {
       const first = emptyFields[0];
@@ -404,7 +346,7 @@ export default function App() {
   };
 
   const handleLoadSamplePatient = async () => {
-    setFormData(samplePatientData);
+    dispatch({ type: 'LOAD_PATIENT', payload: samplePatientData });
     await saveFormDraft(samplePatientData);
     const nowStr = new Date().toLocaleTimeString('th-TH', {
       hour: '2-digit',
@@ -413,7 +355,6 @@ export default function App() {
     });
     setLastAutoSavedTime(nowStr);
     setAutoSaveStatus('saved');
-    setErrors({});
     showToast(
       'info',
       'โหลดข้อมูลตัวอย่างแล้ว',
@@ -423,16 +364,8 @@ export default function App() {
   };
 
   const handleLoadRecord = useCallback(async (record: PsychiatricAssessment) => {
-    const norm = { ...record };
-    if (norm.fullName && (!norm.firstName || !norm.lastName)) {
-      const parsedName = parseFullName(norm.fullName);
-      norm.titlePrefix = norm.titlePrefix || parsedName.titlePrefix;
-      norm.firstName = norm.firstName || parsedName.firstName;
-      norm.lastName = norm.lastName || parsedName.lastName;
-    }
-    setFormData(norm);
-    await saveFormDraft(norm);
-    setErrors({});
+    dispatch({ type: 'LOAD_PATIENT', payload: record });
+    await saveFormDraft(record);
     const nowStr = new Date().toLocaleTimeString('th-TH', {
       hour: '2-digit',
       minute: '2-digit',
@@ -454,12 +387,14 @@ export default function App() {
 
   const confirmResetForm = () => {
     clearFormDraft();
-    setFormData({
-      ...initialAssessmentData,
-      assessmentDate: new Date().toISOString().split('T')[0],
-      assessmentTime: new Date().toTimeString().slice(0, 5),
+    dispatch({
+      type: 'RESET_FORM',
+      payload: {
+        ...initialAssessmentData,
+        assessmentDate: new Date().toISOString().split('T')[0],
+        assessmentTime: new Date().toTimeString().slice(0, 5),
+      },
     });
-    setErrors({});
     setAutoSaveStatus('idle');
     setLastAutoSavedTime(null);
     setIsResetConfirmOpen(false);
@@ -745,7 +680,7 @@ export default function App() {
       {/* Printable & PDF Export Container */}
       <Suspense fallback={null}>
         <div id="printable-document" className="print-only hidden print:block">
-          <AssessmentPdfDocument id="printable-document-content" data={formData} />
+          <AssessmentPdfDocument id="printable-document-content" data={deferredFormData} />
         </div>
         <div
           id="offscreen-pdf-container"
@@ -763,7 +698,7 @@ export default function App() {
           aria-hidden="true"
         >
           <div id="offscreen-pdf-document">
-            <AssessmentPdfDocument id="offscreen-pdf-document-content" data={formData} />
+            <AssessmentPdfDocument id="offscreen-pdf-document-content" data={deferredFormData} />
           </div>
         </div>
       </Suspense>
